@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "version": "1.0.8",
+  "checked_date": "2026-10-11",
+  "release_commit": "6fe4d15cb66596d99d8cfedce69d8fc6dad71886",
+  "release_url": "https://github.com/acidanthera/OpenCorePkg/releases/tag/1.0.8",
+  "release_archive_sha256": "2011e8b7216ecb2645d97ea710df965947edd406846e92050b9bc4190be6d27b",
+  "release_archive_bytes": 10544084,
+  "configuration_reference": {
+    "file": "Configuration.tex",
+    "url": "https://raw.githubusercontent.com/acidanthera/OpenCorePkg/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Docs/Configuration.tex",
+    "sha256": "734ae4d73123cadc9be650e0bb661c6e5c8bc90b58f7c8c807837ce259b6949e",
+    "bytes": 481558
+  },
+  "sample_sha256": "a58ca93ee0e2ac199469b696606ba96bfaafb0a7902e57de6d557548a0c96a58",
+  "sample_source_url": "https://raw.githubusercontent.com/acidanthera/OpenCorePkg/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Docs/Sample.plist",
+  "ocvalidate_sha256": {
+    "ocvalidate.exe": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+    "ocvalidate.linux": "3411f3b7e645f94c7ba602687d42ce6bf4e5ee560f50c3f2ca134e26dfe394ab",
+    "ocvalidate": "c76f907d5caad299889a2314ae68f03cd8538ad53f65a3c2c7c95ae0d0bb0b38"
+  },
+  "original_efi_sha256": {
+    "Bootstrap": "d0163dfbe5d2ea46aececd7d7349acfa5b75dfed2993e8489816f3dda71914c8",
+    "OpenCore": "9ef21f9d846a992c030fa5858736a6d9efa70a3b4ad88b8d747338bb457b14d4",
+    "OpenRuntime": "c67be56660047237360df5eb7f080a2b13129d68e829bee9ad0230e45d516be8",
+    "OpenHfsPlus": "ebc5d139ecfae078dcd618e72e7b2e229de5d60cca3d5edfef995e2f43b7ed31"
+  },
+  "xnu_cpuid_reference": {
+    "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/f6217f891ac0bb64f3d375211650a4c1ff8ca1ea/osfmk/i386/cpuid.h",
+    "sha256": "a97f8fbeb5cdcf7992982a23884f493ac09e6b0de703a886d5d495629db87f84",
+    "commit": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
+    "scope": "Public source header only; no equivalence with installed Tahoe kernel asserted."
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-11",
+  "tests": {
+    "run": 66,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "platform": "Windows/Python 3.12.14"
+  },
+  "upstream_reference_checks": {
+    "schema_version": 1,
+    "release_version": "1.0.8",
+    "archive_sha256": "2011e8b7216ecb2645d97ea710df965947edd406846e92050b9bc4190be6d27b",
+    "platform": "win32",
+    "original_sample": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "public_blank_template": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 1,
+      "schema_passed": false,
+      "raw_output_retained": false
+    },
+    "schema_fixture_supported_model_only": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "unchanged_upstream_sample_proposal": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "proposal_changed_property_count": 8,
+    "source_preserved": true,
+    "public_blank_is_deliberately_incomplete": true,
+    "native_boot_verified": false,
+    "firmware_or_efi_writes": false
+  },
+  "original_unsigned_efi_inspection": [
+    {
+      "entry": "OpenCore",
+      "kind": "pe",
+      "x64": true,
+      "subsystem": 10,
+      "certificate_table_present": false,
+      "authenticode_trust_verified": false,
+      "sha256": "9ef21f9d846a992c030fa5858736a6d9efa70a3b4ad88b8d747338bb457b14d4",
+      "matches_original_release": true
+    },
+    {
+      "entry": "Bootstrap",
+      "kind": "pe",
+      "x64": true,
+      "subsystem": 10,
+      "certificate_table_present": false,
+      "authenticode_trust_verified": false,
+      "sha256": "d0163dfbe5d2ea46aececd7d7349acfa5b75dfed2993e8489816f3dda71914c8",
+      "matches_original_release": true
+    },
+    {
+      "entry": "UEFI/Drivers/0",
+      "kind": "pe",
+      "x64": true,
+      "subsystem": 12,
+      "certificate_table_present": false,
+      "authenticode_trust_verified": false,
+      "sha256": "c67be56660047237360df5eb7f080a2b13129d68e829bee9ad0230e45d516be8",
+      "matches_original_release": true
+    },
+    {
+      "entry": "UEFI/Drivers/1",
+      "kind": "pe",
+      "x64": true,
+      "subsystem": 11,
+      "certificate_table_present": false,
+      "authenticode_trust_verified": false,
+      "sha256": "ebc5d139ecfae078dcd618e72e7b2e229de5d60cca3d5edfef995e2f43b7ed31",
+      "matches_original_release": true
+    }
+  ],
+  "public_template_audit": {
+    "ready_for_boot": false,
+    "schema_passed": false,
+    "findings": [
+      "TahoeSMBIOS",
+      "UpstreamSchema",
+      "SelectedConfigBinding",
+      "OpenCore/Signature",
+      "Bootstrap/Signature",
+      "UEFI/Drivers/0/Signature",
+      "UEFI/Drivers/1/Signature",
+      "VaultFiles",
+      "Prerequisite/backup_checked",
+      "Prerequisite/bitlocker_recovery_available_or_not_used",
+      "Prerequisite/firmware_secure_boot_live",
+      "Prerequisite/firmware_custom_trust_available",
+      "Prerequisite/windows_trust_preserved",
+      "Prerequisite/efi_authenticode_verified",
+      "Prerequisite/vault_signature_verified",
+      "Prerequisite/native_platform_qualified",
+      "Prerequisite/usb_storage_map_qualified",
+      "Prerequisite/native_kext_acceptance_verified",
+      "Prerequisite/windows_boot_without_external_verified",
+      "DeviceQualification"
+    ]
+  },
+  "source_sha256": {
+    "tools/qualify_opencore.py": "8bbbf9abff6046126796723ef264cd1d7ebf3ba20c4b672b16bc0472662195bd",
+    "tools/verify_reference.py": "d828c6f34d3e77b99d768bbb3f7cb78e9c596cbba6481ed5a38b8c5aa3852843",
+    "tests/test_qualification.py": "1bc5f509de323a6d139296ea88f88e75f4ba45717e3302f952bb7f5deef5c6a9",
+    "examples/inspection-template.plist": "ed29933efe9262ac6f29c2a1728caea21b08d246b1eb111591aef4b1f75270f0",
+    "examples/prerequisite-declarations.json": "b14b3d26d5a319d386e729e4a76be104c7622036dda391eedbc8a247d0b97f48",
+    "reference-lock.json": "797e46c668c2cc24b94094fc8a897f991faa40db5460b165005eccc6043bf712"
+  },
+  "ci_status": "Workflow prepared; no hosted run claimed in this local proof.",
+  "native_device_test": false,
+  "firmware_signature_verification": false,
+  "disk_partition_or_firmware_changes": false
+}

@@ -1,0 +1,35 @@
+name: OpenCore offline qualification
+
+on:
+  push:
+    paths:
+      - tools/**
+      - tests/**
+      - examples/**
+      - reference-lock.json
+      - .github/workflows/qualification.yml
+  pull_request:
+    paths:
+      - tools/**
+      - tests/**
+      - examples/**
+      - reference-lock.json
+      - .github/workflows/qualification.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+        with:
+          persist-credentials: false
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Verify pinned original OpenCore release and ocvalidate
+        run: python3 tools/verify_reference.py --download

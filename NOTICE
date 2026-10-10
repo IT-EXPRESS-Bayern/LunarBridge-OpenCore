@@ -1,0 +1,17 @@
+LunarBridge OpenCore
+Copyright (c) 2026 IT-EXPRESS Bayern
+
+The Python tools, tests and original modifications in this project are
+licensed under GNU GPL version 3 only; see LICENSE.
+
+examples/inspection-template.plist is derived from the OpenCore 1.0.8
+Docs/Sample.plist at commit 6fe4d15cb66596d99d8cfedce69d8fc6dad71886.
+Its retained upstream BSD-3-Clause terms and copyright notices are in
+licenses/OpenCore-BSD-3-Clause.txt. Modifications remove personal and
+example identities, device-specific additions and administrative tools,
+and establish the explicit offline review policy described in the docs.
+
+OpenCore EFI binaries and ocvalidate are not redistributed in this Git
+repository. Reference checks use the unchanged official pinned release.
+All upstream licenses continue to apply to separately downloaded materials.
+No Apple XNU code or Apple firmware is incorporated into the module.

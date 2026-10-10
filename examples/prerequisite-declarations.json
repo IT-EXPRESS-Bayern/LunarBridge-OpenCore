@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "backup_checked": false,
+  "bitlocker_recovery_available_or_not_used": false,
+  "firmware_secure_boot_live": false,
+  "firmware_custom_trust_available": false,
+  "windows_trust_preserved": false,
+  "efi_authenticode_verified": false,
+  "vault_signature_verified": false,
+  "native_platform_qualified": false,
+  "usb_storage_map_qualified": false,
+  "native_kext_acceptance_verified": false,
+  "windows_boot_without_external_verified": false
+}

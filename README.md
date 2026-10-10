@@ -31,3 +31,5 @@ Alternativ lädt `--download` genau das gepinnte offizielle Archiv und prüft de
 [docs/CONFIGURATION.md](docs/CONFIGURATION.md) erklärt die konkreten Änderungen. [docs/EXTERNAL_BOOT.md](docs/EXTERNAL_BOOT.md) behandelt die externe SSD, Recovery ohne zusätzlichen Stick und den Windows-Fallback. GPU, I2C, Kamera, Audio, Funk und weitere Hardware bleiben getrennte Treibermodule; OpenCore enthält hier keine Sammel-Kext. Die Grafikentwicklung liegt im [LunarBridge-Hackintosh-Projekt](https://github.com/IT-EXPRESS-Bayern/LunarBridge-Hackintosh).
 
 Eigener Code und Änderungen: **GPL-3.0-only**. Die abgeleitete Sample-Konfiguration behält die OpenCore-Bedingungen aus [NOTICE](NOTICE) und [licenses/OpenCore-BSD-3-Clause.txt](licenses/OpenCore-BSD-3-Clause.txt). Persönliche Konfigurationen, Schlüssel, Vault-Dateien, Berichte und interne Arbeitslisten bleiben lokal.
+
+Der erfolgreiche Online-Prüflauf und sein exakter Quellstand sind in [docs/CI_VALIDATION.json](docs/CI_VALIDATION.json) festgehalten. Spätere Dokumentations-Commits sind davon getrennt; dieser CI-Lauf ist kein Gerätefunktionstest auf dem Samsung.

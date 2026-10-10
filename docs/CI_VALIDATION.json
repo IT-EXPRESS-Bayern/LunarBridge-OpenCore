@@ -1,0 +1,16 @@
+{
+  "repository_url": "https://github.com/IT-EXPRESS-Bayern/LunarBridge-OpenCore",
+  "source_commit": "c32c94532b1e5ba07ffd86f559cb2c350408f2c2",
+  "workflow_run_id": 38090642299,
+  "workflow_url": "https://github.com/IT-EXPRESS-Bayern/LunarBridge-OpenCore/actions/runs/38090642299",
+  "status": "completed",
+  "conclusion": "success",
+  "local_distinct_tests_passed": 66,
+  "native_target_hardware_tests": 0,
+  "verified_on": "2026-10-11",
+  "scope": "Hosted workflow and exact source commit; no Samsung target test.",
+  "later_documentation_commits_are_separate": true,
+  "target_boot_or_secure_boot_verified": false,
+  "actual_gpu_execution_or_metal_implemented": false,
+  "artifact_metadata": []
+}

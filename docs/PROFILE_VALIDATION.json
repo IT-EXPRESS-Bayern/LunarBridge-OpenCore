@@ -161,7 +161,7 @@
     "tests/test_profiles.py": "8122bc30474de776360c52a649a0b32595d5eafe432eb1d27f1d81925ac897a1",
     "tests/test_assembly.py": "7e8dbeb3b21429ba0698e35c9fef3ba7f58e1d064f8fc3fdb1ecb5e084a4f88f",
     "tests/Test-SsdPreparation.ps1": "72852dbd6e473830ea83b40031adf28cd51cf28f7646e98ba415ea33496c0317",
-    "docs/TEST_PROFILES.md": "147b3f0dd370c8ce709c687c11e2f15b6a52a7c889ffeb47419ff879a67cbdc1",
+    "docs/TEST_PROFILES.md": "474326eccac2d4044750396309b41090bf0520f0e31d58ab55ce7b5cecc244e0",
     "examples/prerequisite-declarations.json": "8a6f6134ef6435a5320f0bef3e8cbd1cd863bacbcedc813478474a4574f72d71"
   },
   "apple_secure_boot_automatically_disabled": false,
@@ -171,5 +171,29 @@
   "keys_created_or_enrolled": false,
   "ready_for_boot": false,
   "native_graphics_acceleration_verified": false,
-  "hosted_ci_for_this_change": "pending-publication"
+  "hosted_ci_for_this_change": {
+    "source_commit": "aecf0faea829287f3fa01a27aa1a7476d8581185",
+    "run_id": 38124637395,
+    "url": "https://github.com/IT-EXPRESS-Bayern/LunarBridge-OpenCore/actions/runs/38124637395",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 114426349896,
+        "name": "offline-review",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 114426349936,
+        "name": "ssd-read-only-windows",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "python_tests": 145,
+    "powershell_tests": 16,
+    "native_samsung_tests": 0,
+    "documentation_updated_after_ci": true
+  }
 }

@@ -62,6 +62,21 @@ def check_reference(archive: Path, destination: Path) -> dict:
     source_before = Q.sha256(sample.read_bytes())
     proposed = Q.write_proposal(sample, destination / 'private-stage' / 'sample-review', destination / 'private-stage')
     proposed_result = Q.validate_upstream(destination / 'private-stage' / 'sample-review' / 'proposed.plist', executable, lock)
+    # Exercise the genuine archive/selected-driver assembly path on every hosted
+    # reference run too. The blank remains an inspection fixture, never a laptop EFI.
+    assembly_spec = importlib.util.spec_from_file_location('reference_assembly', ROOT / 'tools' / 'prepare_offline.py')
+    assembly = importlib.util.module_from_spec(assembly_spec)
+    assembly_spec.loader.exec_module(assembly)
+    try:
+        payload, assembly_proof = assembly.validated_payload(archive, blank, inspection_only=True)
+    except (assembly.Q.ReviewError, OSError, ValueError, zipfile.BadZipFile):
+        raise Q.ReviewError('The pinned original offline assembly check failed.') from None
+    assembly_summary = {'archive_integrity_verified': True, 'files': len(payload),
+                        'payload_bytes': sum(len(item['raw']) for item in payload.values()),
+                        'configuration_sha256': assembly_proof['configuration_sha256'],
+                        'upstream_validator': assembly_proof['upstream_validator'],
+                        'inspection_only': True, 'hardware_kexts_enabled': False,
+                        'ready_for_boot': False, 'real_efi_or_disk_modified': False}
     proof = {'schema_version': 1, 'release_version': Q.VERSION,
              'archive_sha256': Q.sha256(archive_raw), 'platform': sys.platform,
              'original_sample': original_result,
@@ -71,6 +86,7 @@ def check_reference(archive: Path, destination: Path) -> dict:
              'proposal_changed_property_count': len(proposed['changes']),
              'source_preserved': Q.sha256(sample.read_bytes()) == source_before,
              'public_blank_is_deliberately_incomplete': not blank_result['schema_passed'],
+             'original_archive_offline_assembly': assembly_summary,
              'native_boot_verified': False, 'firmware_or_efi_writes': False}
     if not (original_result['schema_passed'] and fixture_result['schema_passed'] and
             proposed_result['schema_passed'] and proof['source_preserved'] and

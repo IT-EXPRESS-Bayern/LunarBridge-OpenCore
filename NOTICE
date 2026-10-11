@@ -15,3 +15,11 @@ OpenCore EFI binaries and ocvalidate are not redistributed in this Git
 repository. Reference checks use the unchanged official pinned release.
 All upstream licenses continue to apply to separately downloaded materials.
 No Apple XNU code or Apple firmware is incorporated into the module.
+
+The recovery verification format and fixed public verification modulus in
+tools/prepare_offline.py are adapted from OpenCore 1.0.8
+Utilities/macrecovery/macrecovery.py at the same pinned commit.
+Copyright (c) 2019, vit9696. The retained BSD-3-Clause terms are in
+licenses/OpenCore-BSD-3-Clause.txt. Original changes add explicit input bounds,
+streaming verification and exceptions independent of Python assertion settings.
+Only a public verification modulus is included; no signing keys are generated.

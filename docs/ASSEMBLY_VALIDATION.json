@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-11",
+  "tests": {
+    "run": 121,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "platform": "Windows/Python 3.12.14"
+  },
+  "actual_offline_snapshot": {
+    "file_count": 7,
+    "payload_bytes": 961265615,
+    "configuration_sha256": "ed29933efe9262ac6f29c2a1728caea21b08d246b1eb111591aef4b1f75270f0",
+    "inspection_only": true,
+    "snapshot_matches": true,
+    "manifest_is_authenticated": false,
+    "upstream_validator": {
+      "executed": true,
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 1,
+      "schema_passed": false,
+      "raw_output_retained": false
+    },
+    "recovery": {
+      "chunklist_rsa_sha256_verified": true,
+      "image_chunks_verified": true,
+      "chunks": 92,
+      "image_bytes": 960530321,
+      "image_sha256": "edddd0d5869caaa12e29e6996a04f11590280580976a119dbd42c24fa62fe18e",
+      "chunklist_sha256": "06f7c498f856341f467ba1faedf2717fb2c172ae0aff4658a1467cbf46b711f9",
+      "os_version_verified": false,
+      "native_recovery_boot_verified": false
+    },
+    "files": [
+      {
+        "path": "EFI/BOOT/BOOTx64.efi",
+        "bytes": 24576,
+        "sha256": "d0163dfbe5d2ea46aececd7d7349acfa5b75dfed2993e8489816f3dda71914c8",
+        "role": "bootstrap"
+      },
+      {
+        "path": "EFI/OC/Drivers/OpenHfsPlus.efi",
+        "bytes": 40960,
+        "sha256": "ebc5d139ecfae078dcd618e72e7b2e229de5d60cca3d5edfef995e2f43b7ed31",
+        "role": "efi_driver"
+      },
+      {
+        "path": "EFI/OC/Drivers/OpenRuntime.efi",
+        "bytes": 24576,
+        "sha256": "c67be56660047237360df5eb7f080a2b13129d68e829bee9ad0230e45d516be8",
+        "role": "efi_driver"
+      },
+      {
+        "path": "EFI/OC/OpenCore.efi",
+        "bytes": 626688,
+        "sha256": "9ef21f9d846a992c030fa5858736a6d9efa70a3b4ad88b8d747338bb457b14d4",
+        "role": "opencore"
+      },
+      {
+        "path": "EFI/OC/config.plist",
+        "bytes": 14890,
+        "sha256": "ed29933efe9262ac6f29c2a1728caea21b08d246b1eb111591aef4b1f75270f0",
+        "role": "config"
+      },
+      {
+        "path": "com.apple.recovery.boot/BaseSystem.chunklist",
+        "bytes": 3604,
+        "sha256": "06f7c498f856341f467ba1faedf2717fb2c172ae0aff4658a1467cbf46b711f9",
+        "role": "recovery_chunklist"
+      },
+      {
+        "path": "com.apple.recovery.boot/BaseSystem.dmg",
+        "bytes": 960530321,
+        "sha256": "edddd0d5869caaa12e29e6996a04f11590280580976a119dbd42c24fa62fe18e",
+        "role": "recovery_image"
+      }
+    ]
+  },
+  "selected_prerequisites": {
+    "backup_checked": true,
+    "source": "Latest human confirmation",
+    "declarations_are_verified_evidence": false
+  },
+  "unresolved_findings": [
+    "TahoeSMBIOS",
+    "UpstreamSchema",
+    "OpenCore/Signature",
+    "Bootstrap/Signature",
+    "UEFI/Drivers/0/Signature",
+    "UEFI/Drivers/1/Signature",
+    "VaultFiles",
+    "Prerequisite/bitlocker_recovery_available_or_not_used",
+    "Prerequisite/firmware_secure_boot_live",
+    "Prerequisite/firmware_custom_trust_available",
+    "Prerequisite/windows_trust_preserved",
+    "Prerequisite/efi_authenticode_verified",
+    "Prerequisite/vault_signature_verified",
+    "Prerequisite/native_platform_qualified",
+    "Prerequisite/usb_storage_map_qualified",
+    "Prerequisite/native_kext_acceptance_verified",
+    "Prerequisite/windows_boot_without_external_verified",
+    "DeviceQualification"
+  ],
+  "original_upstream_reference_checks": {
+    "schema_version": 1,
+    "release_version": "1.0.8",
+    "archive_sha256": "2011e8b7216ecb2645d97ea710df965947edd406846e92050b9bc4190be6d27b",
+    "platform": "win32",
+    "original_sample": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "public_blank_template": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 1,
+      "schema_passed": false,
+      "raw_output_retained": false
+    },
+    "schema_fixture_supported_model_only": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "unchanged_upstream_sample_proposal": {
+      "version": "1.0.8",
+      "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+      "exit_code": 0,
+      "schema_passed": true,
+      "raw_output_retained": false
+    },
+    "proposal_changed_property_count": 8,
+    "source_preserved": true,
+    "public_blank_is_deliberately_incomplete": true,
+    "original_archive_offline_assembly": {
+      "archive_integrity_verified": true,
+      "files": 5,
+      "payload_bytes": 731690,
+      "configuration_sha256": "ed29933efe9262ac6f29c2a1728caea21b08d246b1eb111591aef4b1f75270f0",
+      "upstream_validator": {
+        "version": "1.0.8",
+        "executable_sha256": "f459053cefdf1b2ff8c1d74d61d9dc5bb30ce72a4fcbf15bb29333e77d8d045f",
+        "exit_code": 1,
+        "schema_passed": false,
+        "raw_output_retained": false
+      },
+      "inspection_only": true,
+      "hardware_kexts_enabled": false,
+      "ready_for_boot": false,
+      "real_efi_or_disk_modified": false
+    },
+    "native_boot_verified": false,
+    "firmware_or_efi_writes": false
+  },
+  "original_vault_tools": {
+    "Utilities/macrecovery/macrecovery.py": {
+      "sha256": "3023a9b4ca79a5255d93c00f25ab5df37e6f938b729b797d9ecea56184b17aff",
+      "bytes": 20340,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/macrecovery/macrecovery.py",
+      "executed": false
+    },
+    "Utilities/CreateVault/create_vault.sh": {
+      "sha256": "c1bbbca880f76ef27206912f36bd4d44a1cdbdb6b211fb40a305f9587285df2d",
+      "bytes": 2263,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/create_vault.sh",
+      "executed": false
+    },
+    "Utilities/CreateVault/sign.command": {
+      "sha256": "4a0084ec48a5b99922698e15d5c528f0f2b860781629b452ecd6347fc7b45c8f",
+      "bytes": 1912,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/sign.command",
+      "executed": false
+    },
+    "Utilities/CreateVault/RsaTool": {
+      "sha256": "7d7c4853d58778ad23d471524a5d7ad8f617d3f00092e28963a5a2373d2799ba",
+      "bytes": 15576,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/RsaTool",
+      "executed": false
+    }
+  },
+  "public_recovery_modulus_matches_pinned_source": true,
+  "source_sha256": {
+    "tools/prepare_offline.py": "c16273ca52876b473fe9023fae15d3b4defedda3bd7395f0590dced1ac5c87a1",
+    "tools/qualify_opencore.py": "8bbbf9abff6046126796723ef264cd1d7ebf3ba20c4b672b16bc0472662195bd",
+    "tools/verify_reference.py": "8823a48826c46f4768d9f71061a3062de1f0464007db25d6c3137a280fea361c",
+    "tests/test_assembly.py": "11792896775953480860deec3e1d99cee57d45c7f61aed6db52ac8528f49c8d7",
+    "tests/test_qualification.py": "1bc5f509de323a6d139296ea88f88e75f4ba45717e3302f952bb7f5deef5c6a9",
+    "reference-lock.json": "cc49368bf5f85deb3c11e3e90535d8bed7ce1fe78f306e3bde8c722e6db2e7fc",
+    "examples/inspection-template.plist": "ed29933efe9262ac6f29c2a1728caea21b08d246b1eb111591aef4b1f75270f0",
+    "docs/OFFLINE_ASSEMBLY.md": "55fa0977f814750646178185722f15392a2108ba2b81a0d2d33c2dcbb51516ff",
+    "NOTICE": "87665d0f0d7600b829530e28e3f42b23aba03577193b8dede9c2cceda70804d7"
+  },
+  "ready_for_boot": false,
+  "native_device_boot": false,
+  "firmware_trust_verified": false,
+  "keys_generated_or_enrolled": false,
+  "real_efi_or_disk_modified": false,
+  "ci_scope": "Prior hosted CI is bound to its recorded old commit; this continuation is locally verified only."
+}

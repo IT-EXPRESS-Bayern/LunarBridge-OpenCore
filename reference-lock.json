@@ -30,5 +30,31 @@
     "sha256": "a97f8fbeb5cdcf7992982a23884f493ac09e6b0de703a886d5d495629db87f84",
     "commit": "f6217f891ac0bb64f3d375211650a4c1ff8ca1ea",
     "scope": "Public source header only; no equivalence with installed Tahoe kernel asserted."
+  },
+  "offline_tool_references": {
+    "Utilities/macrecovery/macrecovery.py": {
+      "sha256": "3023a9b4ca79a5255d93c00f25ab5df37e6f938b729b797d9ecea56184b17aff",
+      "bytes": 20340,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/macrecovery/macrecovery.py",
+      "executed": false
+    },
+    "Utilities/CreateVault/create_vault.sh": {
+      "sha256": "c1bbbca880f76ef27206912f36bd4d44a1cdbdb6b211fb40a305f9587285df2d",
+      "bytes": 2263,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/create_vault.sh",
+      "executed": false
+    },
+    "Utilities/CreateVault/sign.command": {
+      "sha256": "4a0084ec48a5b99922698e15d5c528f0f2b860781629b452ecd6347fc7b45c8f",
+      "bytes": 1912,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/sign.command",
+      "executed": false
+    },
+    "Utilities/CreateVault/RsaTool": {
+      "sha256": "7d7c4853d58778ad23d471524a5d7ad8f617d3f00092e28963a5a2373d2799ba",
+      "bytes": 15576,
+      "url": "https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Utilities/CreateVault/RsaTool",
+      "executed": false
+    }
   }
 }

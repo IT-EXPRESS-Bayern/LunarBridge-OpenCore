@@ -33,3 +33,26 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Verify pinned original OpenCore release and ocvalidate
         run: python3 tools/verify_reference.py --download
+
+  ssd-read-only-windows:
+    runs-on: windows-2025
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+        with:
+          persist-credentials: false
+      - name: Parse PowerShell scripts
+        run: |
+          $sources = @('tools/Prepare-ExternalSsd.ps1', 'tools/SsdPreparation.Core.psm1', 'tests/Test-SsdPreparation.ps1')
+          foreach ($source in $sources) {
+            $tokens = $null
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $source), [ref]$tokens, [ref]$parseErrors)
+            if ($parseErrors.Count -gt 0) { throw 'PowerShell parser rejected an SSD review source.' }
+          }
+      - name: SSD boundary and failure tests without real disk queries
+        run: ./tests/Test-SsdPreparation.ps1

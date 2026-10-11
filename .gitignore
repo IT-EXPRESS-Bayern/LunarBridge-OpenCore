@@ -4,6 +4,7 @@
 /work/
 /build/
 /reports/
+**/*.private.json
 **/config.plist
 **/nvram.plist
 **/nvram.fallback

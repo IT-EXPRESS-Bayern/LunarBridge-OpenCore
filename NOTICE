@@ -1,7 +1,7 @@
 LunarBridge OpenCore
 Copyright (c) 2026 IT-EXPRESS Bayern
 
-The Python tools, tests and original modifications in this project are
+The Python and PowerShell tools, tests and original modifications in this project are
 licensed under GNU GPL version 3 only; see LICENSE.
 
 examples/inspection-template.plist is derived from the OpenCore 1.0.8

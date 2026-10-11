@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "checked_utc": "2026-10-11T04:47:22.3863742Z",
+  "state": "blocked-awaiting-qualified-boot-bundle-and-secure-chain",
+  "privacy": {
+    "sanitized": true,
+    "device_identifiers_omitted": true,
+    "absolute_paths_omitted": true
+  },
+  "target": {
+    "number": 1,
+    "bus_type": "USB",
+    "size_bytes": 512110190592,
+    "private_device_binding_matched": true,
+    "internal_and_virtual_disks_excluded": true,
+    "is_boot": false,
+    "is_system": false
+  },
+  "backup": {
+    "human_confirmed_saved_and_checked": true,
+    "entire_external_disk_authorized": true,
+    "current_process_backup_scan_performed": false
+  },
+  "administrator": false,
+  "firmware_secure_boot": {
+    "live_query_state": "requires-administrator",
+    "enabled": null,
+    "external_chain_verified": false
+  },
+  "staging": {
+    "files_verified": 7,
+    "bytes_verified": 961265615,
+    "inventory_hash_integrity_verified": true,
+    "inspection_only": true,
+    "ready_for_boot": false,
+    "manifest_is_authenticated": false,
+    "upstream_schema_passed_reported": false,
+    "apple_chunklist_signature_repeated_here": false,
+    "apple_chunklist_signature_reported_verified": true,
+    "recovery_image_chunks_reported_verified": true,
+    "recovery_native_boot_verified": false,
+    "recovery_os_version_verified": false
+  },
+  "proposed_layout": {
+    "partition_style": "GPT",
+    "creation_executed": false,
+    "first_partition": {
+      "role": "EFI-System-Partition-and-recovery",
+      "file_system": "FAT32",
+      "offset_bytes": 1048576,
+      "size_bytes": 2147483648,
+      "root_directories": [
+        "EFI",
+        "com.apple.recovery.boot"
+      ],
+      "reserved_headroom_bytes": 67108864
+    },
+    "second_partition": {
+      "role": "macos-target-only",
+      "initial_file_system": "RAW-unformatted",
+      "future_file_system": "APFS-by-macos-installer",
+      "offset_bytes": 2148532224,
+      "estimated_size_bytes": 509960257536,
+      "actual_size_requires_future_extent_check": true
+    },
+    "tail_reserve_minimum_bytes": 1048576,
+    "installation_preserves_first_partition": true
+  },
+  "remaining_conditions": [
+    "QUALIFIED_NATIVE_LUNAR_LAKE_ACPI_USB_AND_KEXT_CONFIG",
+    "VAULT_AND_FINAL_EFI_LOADER_SIGNATURES",
+    "LIVE_FIRMWARE_SECURE_BOOT_AND_EXTERNAL_TRUST",
+    "PRESERVED_WINDOWS_OEM_MICROSOFT_TRUST_AND_BITLOCKER_RETURN_PATH",
+    "ADMINISTRATOR_FOR_FUTURE_EXTERNAL_PARTITION_ACTION",
+    "NATIVE_RECOVERY_INSTALL_DATA_OR_NETWORK",
+    "WINDOWS_MACOS_PICKER_AND_DIRECT_WINDOWS_FALLBACK_DEVICE_TESTS"
+  ],
+  "tests": {
+    "powershell": {
+      "run": 11,
+      "failures": 0,
+      "successful": true,
+      "version": "7.6.5",
+      "real_device_queries": 0,
+      "cases": [
+        {
+          "case": "internal-virtual-system-and-offline-targets-refused",
+          "passed": true
+        },
+        {
+          "case": "exact-device-selected-no-serial-or-number-fallback",
+          "passed": true
+        },
+        {
+          "case": "ambiguous-or-reassigned-identity-refused",
+          "passed": true
+        },
+        {
+          "case": "truthy-strings-cannot-certify-non-system-device",
+          "passed": true
+        },
+        {
+          "case": "manifest-path-traversal-rooted-path-and-directory-refused",
+          "passed": true
+        },
+        {
+          "case": "inventory-hashes-never-certify-boot-or-secure-chain",
+          "passed": true
+        },
+        {
+          "case": "manually-edited-qualification-booleans-and-strings-refused",
+          "passed": true
+        },
+        {
+          "case": "changed-file-content-and-duplicate-inventory-refused",
+          "passed": true
+        },
+        {
+          "case": "2gib-esp-recovery-capacity-and-fat32-limits-enforced",
+          "passed": true
+        },
+        {
+          "case": "oversized-and-malformed-manifests-refused-before-use",
+          "passed": true
+        },
+        {
+          "case": "preflight-ast-has-no-destructive-command-or-elevation-path",
+          "passed": true
+        }
+      ]
+    },
+    "python": {
+      "run": 121,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "Existing Python regression suite rerun during integration"
+    },
+    "parser": [
+      {
+        "source": "tools/Prepare-ExternalSsd.ps1",
+        "parser_errors": 0
+      },
+      {
+        "source": "tools/SsdPreparation.Core.psm1",
+        "parser_errors": 0
+      },
+      {
+        "source": "tests/Test-SsdPreparation.ps1",
+        "parser_errors": 0
+      }
+    ]
+  },
+  "ci": {
+    "windows_job": "ssd-read-only-windows",
+    "runner": "windows-2025",
+    "checkout_commit": "1af3b93b6815bc44a9784bd300feb67ff0d1eeb3",
+    "runner_os_image_immutable": false,
+    "hosted_result_for_this_change": "not-yet-run"
+  },
+  "source_sha256": {
+    "tools/Prepare-ExternalSsd.ps1": "fea4e7784512409edb25d772a338b14b13d4bb377fdb7e2c21c5a067930482f8",
+    "tools/SsdPreparation.Core.psm1": "3bf6e244d3fe3d278a08933fd48a19fa0dbec1aa2c6294f68a705b5d2a58e425",
+    "tests/Test-SsdPreparation.ps1": "022c0e6d3fc84cb26031f7027bfb9c9c552d5fa6a533cdba08a6d9ffd119724b",
+    ".github/workflows/qualification.yml": "70622fda2e8ab09ea85a92fa625acb30a73b26bec9512ac08791b8bbb6f61f75",
+    "docs/LunarBridge-SSD-Plan.md": "8042f2c7f25e899a4845fb7993a46e7ca2c66a893a3ec7eed4f306a6183670b3",
+    ".gitignore": "141f4c8da8be7f2f1f2cdd14102cb5b918b92f4a55a3c6632a0277917c0f782b",
+    "NOTICE": "7775b45e97dbb6aa6ed81ceae757d243af21d276735f5c882ec722dff0acdf79"
+  },
+  "preflight_direct_pwsh_file_exit_code": 2,
+  "apply_supported": false,
+  "apply_exit_code": 4,
+  "installer_ready": false,
+  "disk_writes_performed": 0,
+  "firmware_or_bcd_changes_performed": 0,
+  "administrator_elevation_attempted": false
+}

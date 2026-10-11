@@ -185,5 +185,18 @@
   "installer_ready": false,
   "disk_writes_performed": 0,
   "firmware_or_bcd_changes_performed": 0,
-  "administrator_elevation_attempted": false
+  "administrator_elevation_attempted": false,
+  "subsequent_read_only_recovery_version_inspection": {
+    "evidence_file": "RECOVERY_VERSION.json",
+    "evidence_sha256": "e87b9776981bd5d70ed8cab0f9bda74a8cab657ec3bef6bff86da1f6b94e87e0",
+    "recovery_os_version_verified": true,
+    "recovery_os_version": "26.6.2",
+    "recovery_os_build": "25G83",
+    "recovery_environment_only": true,
+    "installed_payload_version_verified": false,
+    "native_recovery_boot_verified": false,
+    "both_original_and_staged_image_hashes_verified_unchanged": true,
+    "historical_preflight_fields_retained": true,
+    "stage_manifest_changed": false
+  }
 }

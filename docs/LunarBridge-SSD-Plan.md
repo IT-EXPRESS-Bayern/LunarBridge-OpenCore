@@ -15,6 +15,9 @@ Für die bestätigte externe Kapazität von 512.110.190.592 Bytes gilt folgender
 
 Der aktuell geprüfte Dateistand umfasst sieben Dateien mit 961.265.615 Bytes. Er passt einschließlich der vorgesehenen 64-MiB-Reserve in die geplante FAT32-Partition. Das Recovery-Abbild selbst umfasst 960.530.321 Bytes und liegt unter FAT32s Einzeldateigrenze. Die vollständige Apple-RSA-/Chunk-Prüfung steht in [ASSEMBLY_VALIDATION.json](ASSEMBLY_VALIDATION.json). Der SSD-Helfer wiederholt nur Inventar-, Größen- und Dateihashprüfungen; er übernimmt die Recovery-Signaturmeldung ausdrücklich als Eingangsinformation und führt keine neue Kryptografie- oder native Bootprüfung durch.
 
+Eine zusätzliche lesende Untersuchung des vorhandenen Images bestätigt **macOS Tahoe Recovery 26.6.2, Build 25G83** direkt aus `System/Library/CoreServices/SystemVersion.plist`. Zwei unabhängige Parser liefern dieselbe 603-Byte-Datei mit SHA-256 `6151cb883e5b48d43a33d4d41956405a1cd502e0c8622319388d943e2cb804a1`. Original und Stage bleiben unverändert. [RECOVERY_VERSION.json](RECOVERY_VERSION.json) bindet den Befund an die tatsächlichen Imagebytes. Die spätere installierte macOS-Payload-Version und ein nativer Start bleiben ungeprüft. Dieser zusätzliche Versionsbefund ändert das historische Assembly-Manifest nicht.
+
+
 Die externe SSD soll später zugleich Startmedium und Installationsziel sein. Ein zusätzlicher USB-Stick ist für diese Dateianordnung nicht nötig. Bei einer Installation muss die erste FAT32-Partition erhalten bleiben. Im macOS-Festplattendienstprogramm darf ausschließlich die zweite, zuvor eindeutig bestimmte Zielpartition eingerichtet werden; das Löschen des gesamten externen Datenträgers würde das eigene Startmedium entfernen. Eine automatisch angelegte MSR-Partition wird vom Plan nicht vorausgesetzt. Die tatsächliche Windows-/GPT-Anordnung müsste vor einer Umsetzung neu geprüft werden.
 
 Aktuell sind folgende Bedingungen offen:

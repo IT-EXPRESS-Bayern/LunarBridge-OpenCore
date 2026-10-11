@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "verified-actual-recovery-environment-version",
+  "version_source": "System/Library/CoreServices/SystemVersion.plist inside the existing image",
+  "version_fields": {
+    "ProductVersion": "26.6.2",
+    "ProductBuildVersion": "25G83",
+    "ProductName": "macOS"
+  },
+  "marketing_name": "macOS Tahoe",
+  "marketing_name_source": "https://support.apple.com/en-us/122868",
+  "matching_version_build_primary_source": "https://developer.apple.com/news/releases/",
+  "plist_size_bytes": 603,
+  "plist_sha256": "6151cb883e5b48d43a33d4d41956405a1cd502e0c8622319388d943e2cb804a1",
+  "two_independent_parsers_agree": true,
+  "independent_extraction_exit_code": 0,
+  "private_udif_hfs_parser": {
+    "read_only": true,
+    "image_compressed_bytes_read": 4241004,
+    "decompressed_metadata_and_target_bytes_read": 32505856,
+    "catalog_leaf_nodes_read": 3192
+  },
+  "official_portable_tool": {
+    "source": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe",
+    "size_bytes": 1664082,
+    "sha256": "d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d",
+    "release_asset_sha256_verified": true,
+    "authenticode_status": "NotSigned",
+    "portable_member_authenticode_checks": [
+      {
+        "file": "7z.exe",
+        "authenticode_status": "NotSigned",
+        "signer_certificate_present": false,
+        "checked": true
+      },
+      {
+        "file": "7z.dll",
+        "authenticode_status": "NotSigned",
+        "signer_certificate_present": false,
+        "checked": true
+      }
+    ],
+    "signed_authenticode_identity_confirmed": false,
+    "installer_executed": false,
+    "system_installation_performed": false,
+    "used_for_one_named_plist": true,
+    "original_license_preserved": true
+  },
+  "image_integrity_after": [
+    {
+      "role": "original",
+      "file": "BaseSystem.dmg",
+      "size_bytes": 960530321,
+      "sha256": "edddd0d5869caaa12e29e6996a04f11590280580976a119dbd42c24fa62fe18e",
+      "unchanged_since_before_inspection": true
+    },
+    {
+      "role": "stage",
+      "file": "BaseSystem.dmg",
+      "size_bytes": 960530321,
+      "sha256": "edddd0d5869caaa12e29e6996a04f11590280580976a119dbd42c24fa62fe18e",
+      "unchanged_since_before_inspection": true
+    }
+  ],
+  "existing_stage_inventory_integrity": {
+    "state": "existing-stage-inventory-still-matches",
+    "files_verified": 7,
+    "bytes_verified": 961265615,
+    "hash_integrity_verified": true,
+    "ready_for_boot": false,
+    "manifest_is_authenticated": false,
+    "stage_writes_performed": 0
+  },
+  "full_image_extracted": false,
+  "image_mounted": false,
+  "public_repository_changed": false,
+  "stage_or_original_image_changed": false,
+  "native_macos_boot_tested": false,
+  "subsequent_installed_macos_payload_version_verified": false,
+  "apple_chunklist_signature_rechecked_in_this_step": false,
+  "private_device_ids_or_signed_urls_disclosed": false
+}

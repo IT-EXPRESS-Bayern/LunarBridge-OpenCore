@@ -156,14 +156,26 @@
     "runner": "windows-2025",
     "checkout_commit": "1af3b93b6815bc44a9784bd300feb67ff0d1eeb3",
     "runner_os_image_immutable": false,
-    "hosted_result_for_this_change": "not-yet-run"
+    "hosted_result_for_this_change": "success",
+    "source_commit": "adcffd6d8dc15ff8b70f11e268fb205c5550f16b",
+    "workflow_run_id": 38112924120,
+    "workflow_url": "https://github.com/IT-EXPRESS-Bayern/LunarBridge-OpenCore/actions/runs/38112924120",
+    "job_conclusions": {
+      "offline-review": "success",
+      "ssd-read-only-windows": "success"
+    },
+    "ci_tests": {
+      "python": 121,
+      "powershell": 11
+    },
+    "samsung_native_boot_verified": false
   },
   "source_sha256": {
     "tools/Prepare-ExternalSsd.ps1": "fea4e7784512409edb25d772a338b14b13d4bb377fdb7e2c21c5a067930482f8",
     "tools/SsdPreparation.Core.psm1": "3bf6e244d3fe3d278a08933fd48a19fa0dbec1aa2c6294f68a705b5d2a58e425",
     "tests/Test-SsdPreparation.ps1": "022c0e6d3fc84cb26031f7027bfb9c9c552d5fa6a533cdba08a6d9ffd119724b",
     ".github/workflows/qualification.yml": "70622fda2e8ab09ea85a92fa625acb30a73b26bec9512ac08791b8bbb6f61f75",
-    "docs/LunarBridge-SSD-Plan.md": "8042f2c7f25e899a4845fb7993a46e7ca2c66a893a3ec7eed4f306a6183670b3",
+    "docs/LunarBridge-SSD-Plan.md": "6f23f19d9fcbee68126ed1d87838c74145d57634f179b0af59f43ec15d56f7e8",
     ".gitignore": "141f4c8da8be7f2f1f2cdd14102cb5b918b92f4a55a3c6632a0277917c0f782b",
     "NOTICE": "7775b45e97dbb6aa6ed81ceae757d243af21d276735f5c882ec722dff0acdf79"
   },

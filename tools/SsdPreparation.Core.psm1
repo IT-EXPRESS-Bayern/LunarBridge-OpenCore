@@ -175,6 +175,41 @@ function Get-SsdLayoutPlan {
     }
 }
 
+function Get-SsdFirmwareProfileReview {
+    param([ValidateSet('strict-secure-boot', 'temporary-native-test')]
+          [string] $Profile = 'strict-secure-boot',
+          [object] $FirmwareEnabled = $null)
+    if ($Profile -cnotin @('strict-secure-boot', 'temporary-native-test')) {
+        throw 'PROFILE_REQUIRES_EXACT_DOCUMENTED_SELECTION'
+    }
+    if ($null -ne $FirmwareEnabled -and $FirmwareEnabled -isnot [bool]) {
+        throw 'FIRMWARE_STATE_REQUIRES_TYPED_BOOL_OR_UNKNOWN'
+    }
+    $Strict = $Profile -ceq 'strict-secure-boot'
+    $Observed = $FirmwareEnabled -is [bool]
+    $StateMatched = $Observed -and ($FirmwareEnabled -eq $Strict)
+    $StateCode = if ($Strict) { 'FIRMWARE_SECURE_BOOT_ENABLED' } else { 'FIRMWARE_SECURE_BOOT_DISABLED_FOR_TEST' }
+    return [ordered]@{
+        profile = $Profile
+        temporary_test_only = (-not $Strict)
+        required_firmware_state = $(if ($Strict) { 'enabled' } else { 'disabled-for-test' })
+        firmware_secure_boot_required = $Strict
+        observed_firmware_state_known = $Observed
+        observed_firmware_state_matches_profile = $StateMatched
+        efi_authenticode_required = $Strict
+        unsigned_pinned_original_efi_allowed = (-not $Strict)
+        apple_secure_boot_changed_by_firmware_profile = $false
+        sip_amfi_gatekeeper_bypass_allowed = $false
+        external_chain_verified = $false
+        ready_for_boot = $false
+        gates = @(
+            [ordered]@{ code = $StateCode; required = $true; satisfied = $StateMatched }
+            [ordered]@{ code = 'EXTERNAL_FIRMWARE_TRUST_CHAIN'; required = $Strict;
+                satisfied = $(if ($Strict) { $false } else { $null }) }
+        )
+    }
+}
+
 function Test-SsdStagedSnapshot {
     param([Parameter(Mandatory)] [string] $Root,
           [Parameter(Mandatory)] [System.Collections.IDictionary] $Manifest)
@@ -188,6 +223,8 @@ function Test-SsdStagedSnapshot {
         secure_chain_verified = $false
     }
     try {
+        $SnapshotProfile = if ($Manifest.Contains('profile')) { $Manifest['profile'] } else { 'strict-secure-boot' }
+        [void](Get-SsdFirmwareProfileReview -Profile $SnapshotProfile)
         if (($Manifest['schema_version'] -isnot [int] -and $Manifest['schema_version'] -isnot [long]) -or
             $Manifest['schema_version'] -ne 1 -or
             $Manifest['kind'] -cne 'private_unsigned_offline_snapshot' -or
@@ -245,6 +282,7 @@ function Test-SsdStagedSnapshot {
         $Recovery = $Manifest['recovery']
         return [ordered]@{
             state = 'hash-checked-private-inspection-snapshot'
+            snapshot_profile = $SnapshotProfile
             code = 'QUALIFIED_BOOT_BUNDLE_AND_SECURE_CHAIN_MISSING'
             files_verified = $Entries.Count
             bytes_verified = $BytesVerified
@@ -265,4 +303,4 @@ function Test-SsdStagedSnapshot {
 
 Export-ModuleMember -Function Test-SsdTarget, New-SsdPrivateIdentity, Resolve-SsdIdentity,
     Assert-SsdLocalRegularPath, Read-SsdBoundedJson, Get-SsdLayoutPlan, Test-SsdStagedSnapshot,
-    Assert-SsdOrdinaryRoot, Initialize-SsdPrivateDirectory
+    Assert-SsdOrdinaryRoot, Initialize-SsdPrivateDirectory, Get-SsdFirmwareProfileReview

@@ -8,6 +8,8 @@ Die bewusst unvollständige öffentliche Konfiguration ist nur mit `--inspection
 
 Einzelne Hardwaretreiber werden nur anhand vorhandener, aktivierter `Kernel/Add`-Einträge gelesen. Dieses eingeschränkte Profil übernimmt separate oberste `.kext`-Pakete mit `Contents/Info.plist`, passendem `CFBundleIdentifier`, Pakettyp und x64-`MH_KEXT_BUNDLE`-Executable. Codeless-Kexts sind möglich. Verschachtelte Kexts benötigen eine eigene Prüfung und werden hier abgelehnt. Das ist eine Grenze dieses Vorbereiters, keine allgemeine OpenCore-Grenze. Kext-Metadaten, Mach-O-Struktur oder vorhandene Signaturdaten ersetzen keine native Ladezulassung.
 
+Alle Befehle verwenden ohne `--profile` das erhaltene `strict-secure-boot`. Für die aktuelle native Grafikentwicklung kann `--profile temporary-native-test` ausdrücklich ergänzt werden. Dieses Profil erlaubt unsignierte gepinnte Original-EFI und einen Optional-Vault-Vorschlag; Apple-/SIP-/Kext-Prüfungen bleiben separat. [TEST_PROFILES.md](TEST_PROFILES.md) beschreibt auch die reine Bewertung eines bisherigen strengen Snapshots, ohne ihn neu zu erzeugen.
+
 Aus dem Repository-Verzeichnis, mit bereits vorhandenem Originalarchiv und Recovery:
 
 ```powershell
@@ -41,7 +43,7 @@ Eine zusätzliche lesende Untersuchung des vorhandenen Images bestätigt **macOS
 
 `assembly-manifest.json` enthält relative Pfade, Größen, Dateihashes und Rollen. Es enthält keine absoluten Benutzerpfade oder SMBIOS-Kennungen. `preflight` liest die aktuelle Dateiliste erneut und erkennt Änderungen, fehlende und hinzugefügte Dateien, Links und Namenskollisionen. Ein Dateimanifest ist selbst kein authentifizierter Vertrauensanker. Sein Inhalt darf keine gültige EFI-Signatur, Firmware-Vertrauen oder einen erfolgreichen Geräte-Boot vortäuschen. Bei Abweichungen wird die weitere Qualifikation ausgesetzt und die betroffene Signierungsabhängigkeit benannt. Nach einer geplanten Signierung verändert sich die ursprüngliche unsignierte Vorlage erwartungsgemäß; sie muss als alte Quellversion erhalten bleiben. Die endgültige signierte Kopie wird danach separat mit `qualify_opencore.py audit` und den tatsächlichen kryptografischen und physischen Nachweisen geprüft. Der Generator setzt keine Manifest-Historie stillschweigend zurück.
 
-Für die endgültige Vertrauenskette gilt diese Reihenfolge:
+Für die endgültige Vertrauenskette des strengen Profils gilt diese Reihenfolge:
 
 1. Die konkrete Mac-Identität, CPU-/XNU-Anpassungen, ACPI-Darwin-Guards, USB-Abbildung und jedes einzelne Hardwaremodul qualifizieren. Keine Diagnose-Kext automatisch aktivieren.
 2. Die endgültigen Kext-Dateien signieren und ihre Zulassung unter der gewählten Apple-Secure-Boot-/SIP-Richtlinie auf dem Zielgerät nachweisen.
@@ -52,7 +54,9 @@ Für die endgültige Vertrauenskette gilt diese Reihenfolge:
 7. Die Firmware-Vertrauens- und Sperrlisten mit erhaltenem Microsoft-/OEM-Windows-Vertrauen einschließlich passender 2023-Zertifikate prüfen. Erst die konkrete Firmware-Annahme ist ein Nachweis für diesen Samsung.
 8. Mit tatsächlich aktivem Firmware Secure Boot Windows über den Picker, macOS extern und Windows ohne angeschlossene externe SSD testen.
 
-Die Zuordnung von Änderungen ist präzise:
+Im temporären Testprofil werden EFI-Authenticode-/Firmware-Trust-Schritte nicht als erforderlich ausgegeben. Die Bestätigung des deaktivierten Firmwarezustands, CPU-/ACPI-/USB-/Grafik-Kext-Qualifikation, die ausdrücklich gewählte Apple-/SIP-/Vault-Richtlinie und beide nativen Boots bleiben offen. Das Manifest und seine aktuellen Signierungsabhängigkeiten werden dadurch nicht zurückgesetzt.
+
+Die Zuordnung von Änderungen im strengen Profil ist präzise:
 
 | Änderung | Zu wiederholende Prüfung |
 | --- | --- |
@@ -67,6 +71,6 @@ Das originale `Utilities/CreateVault/sign.command` ist hier keine Windows-Signie
 
 Die externe SSD soll später selbst das USB-C-Startmedium tragen: eine ausreichend große FAT32-EFI-/Recovery-Partition und ein separates APFS-Installationsziel. Im geplanten gemeinsamen FAT32-Bereich liegen `EFI` und `com.apple.recovery.boot` direkt nebeneinander. Ein zusätzlicher USB-Stick ist damit für die Dateianordnung nicht nötig. Recovery installiert anschließend weitere macOS-Daten; dafür fehlt bislang ein bestätigter Netzwerkweg auf dem Gerät. Der abgebrochene große Installer-Download wird nicht gestartet. Interne Windows-Dateien werden nicht dupliziert, gelöscht oder ersetzt.
 
-Noch physisch oder mit zusätzlichen Rechten erforderlich sind ein erhöhter Windows-Prozess für die spätere, exakt abgegrenzte externe GPT-/Partitionsaktion, die Live-Abfrage des Firmwarezustands, Zugriff auf das Samsung-BIOS zur Prüfung eines zusätzlichen Vertrauensankers ohne OEM-Schlüsselreset, ein verfügbarer BitLocker-Rückweg oder belegte Nichtverwendung sowie der tatsächliche native CPU-/ACPI-/USB-/Kext- und Boot-Test. Die Datensicherung der gesamten Lexar-SSD ist vom Besitzer bestätigt; diese Bestätigung ersetzt keinen der weiteren Nachweise. Die Auswahl muss unmittelbar vor einer Datenträgeraktion anhand des USB-Laufwerks selbst überprüft werden; Datenträgernummern können sich ändern. Die interne Samsung-Systemplatte gehört nicht zum Zielbereich. Wie Microsoft-Vertrauen erhalten werden muss, beschreibt die [Herstellerrichtlinie](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-secure-boot-key-creation-and-management-guidance?view=windows-11).
+Noch physisch oder mit zusätzlichen Rechten erforderlich sind ein erhöhter Windows-Prozess für die spätere, exakt abgegrenzte externe GPT-/Partitionsaktion, die Live-Abfrage des Firmwarezustands, Zugriff auf das Samsung-BIOS zur Bestätigung des gewählten Testzustands beziehungsweise im strengen Profil zur Prüfung eines zusätzlichen Vertrauensankers ohne OEM-Schlüsselreset, ein verfügbarer BitLocker-Rückweg oder belegte Nichtverwendung sowie der tatsächliche native CPU-/ACPI-/USB-/Kext- und Boot-Test. Die Datensicherung der gesamten Lexar-SSD ist vom Besitzer bestätigt; diese Bestätigung ersetzt keinen der weiteren Nachweise. Die Auswahl muss unmittelbar vor einer Datenträgeraktion anhand des USB-Laufwerks selbst überprüft werden; Datenträgernummern können sich ändern. Die interne Samsung-Systemplatte gehört nicht zum Zielbereich. Wie Microsoft-Vertrauen erhalten werden muss, beschreibt die [Herstellerrichtlinie](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-secure-boot-key-creation-and-management-guidance?view=windows-11).
 
 Die bisher erfolgreiche Online-CI ist in `CI_VALIDATION.json` an ihren damaligen Commit gebunden. Neue Werkzeuge und Tests werden erst durch einen neuen Lauf am neu veröffentlichten Quellstand online bestätigt. Der Workflow prüft nun zusätzlich die echte Offline-Paketprüfung mit dem gepinnten Originalarchiv; er besitzt weiterhin keine Firmware- oder Samsung-Hardware.

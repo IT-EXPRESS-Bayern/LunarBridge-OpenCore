@@ -156,6 +156,8 @@ Invoke-SsdReviewCase 'oversized-and-malformed-manifests-refused-before-use' {
     Assert-SsdRefusal { Read-SsdBoundedJson $Path }
     [IO.File]::WriteAllText($Path, '{invalid')
     Assert-SsdRefusal { Read-SsdBoundedJson $Path }
+    # This deliberately unlisted input belongs only to this bounded-JSON case.
+    [IO.File]::Delete($Path)
 }
 Invoke-SsdReviewCase 'preflight-ast-has-no-destructive-command-or-elevation-path' {
     $Forbidden = @('Clear-Disk', 'Initialize-Disk', 'New-Partition', 'Remove-Partition',
@@ -173,6 +175,57 @@ Invoke-SsdReviewCase 'preflight-ast-has-no-destructive-command-or-elevation-path
             Assert-SsdReview ($null -ne $Name -and $Name -notin $Forbidden)
         }
     }
+}
+
+Invoke-SsdReviewCase 'default-profile-still-requires-enabled-firmware-and-trust' {
+    $Policy = Get-SsdFirmwareProfileReview -FirmwareEnabled $true
+    Assert-SsdReview ($Policy.profile -ceq 'strict-secure-boot' -and $Policy.firmware_secure_boot_required)
+    Assert-SsdReview ($Policy.efi_authenticode_required -and -not $Policy.unsigned_pinned_original_efi_allowed)
+    Assert-SsdReview $Policy.gates[0].satisfied
+    Assert-SsdReview ($Policy.gates[1].required -and -not $Policy.gates[1].satisfied)
+    Assert-SsdReview (-not $Policy.external_chain_verified -and -not $Policy.ready_for_boot)
+}
+Invoke-SsdReviewCase 'explicit-test-profile-allows-unsigned-efi-without-claiming-trust' {
+    $Policy = Get-SsdFirmwareProfileReview -Profile 'temporary-native-test' -FirmwareEnabled $false
+    Assert-SsdReview ($Policy.temporary_test_only -and -not $Policy.firmware_secure_boot_required)
+    Assert-SsdReview ($Policy.unsigned_pinned_original_efi_allowed -and -not $Policy.efi_authenticode_required)
+    Assert-SsdReview ($Policy.gates[0].satisfied -and -not $Policy.gates[1].required)
+    Assert-SsdReview ($null -eq $Policy.gates[1].satisfied -and -not $Policy.external_chain_verified)
+    Assert-SsdReview (-not $Policy.apple_secure_boot_changed_by_firmware_profile -and
+        -not $Policy.sip_amfi_gatekeeper_bypass_allowed -and -not $Policy.ready_for_boot)
+}
+Invoke-SsdReviewCase 'unknown-or-wrong-firmware-state-never-matches-test-profile' {
+    foreach ($Enabled in @($null, $true)) {
+        $Policy = Get-SsdFirmwareProfileReview -Profile 'temporary-native-test' -FirmwareEnabled $Enabled
+        Assert-SsdReview (-not $Policy.observed_firmware_state_matches_profile -and -not $Policy.gates[0].satisfied)
+    }
+    Assert-SsdReview (-not (Get-SsdFirmwareProfileReview -FirmwareEnabled $false).gates[0].satisfied)
+    foreach ($Invalid in @('false', 0, 1)) {
+        Assert-SsdRefusal { Get-SsdFirmwareProfileReview -Profile 'temporary-native-test' -FirmwareEnabled $Invalid }
+    }
+    foreach ($Invalid in @('unknown', 'STRICT-SECURE-BOOT', 'TEMPORARY-NATIVE-TEST')) {
+        Assert-SsdRefusal { Get-SsdFirmwareProfileReview -Profile $Invalid }
+    }
+}
+Invoke-SsdReviewCase 'snapshot-profile-metadata-is-validated-without-boot-approval' {
+    $FixtureManifest.profile = 'temporary-native-test'
+    $Review = Test-SsdStagedSnapshot $SsdFixtureRoot $FixtureManifest
+    Assert-SsdReview ($Review.hash_integrity_verified -and $Review.snapshot_profile -ceq 'temporary-native-test')
+    Assert-SsdReview (-not $Review.qualified_boot_bundle -and -not $Review.secure_chain_verified)
+    $FixtureManifest.profile = 'unknown'
+    Assert-SsdReview (-not (Test-SsdStagedSnapshot $SsdFixtureRoot $FixtureManifest).hash_integrity_verified)
+    $FixtureManifest.Remove('profile')
+    Assert-SsdReview ((Test-SsdStagedSnapshot $SsdFixtureRoot $FixtureManifest).snapshot_profile -ceq 'strict-secure-boot')
+}
+Invoke-SsdReviewCase 'apply-is-unconditionally-blocked-for-both-profile-cli-selections' {
+    $ReportPath = Join-Path $SsdPrivateRoot 'preflight-report.private.json'
+    $Before = if ([IO.File]::Exists($ReportPath)) { (Get-FileHash -LiteralPath $ReportPath).Hash } else { $null }
+    foreach ($Profile in @('strict-secure-boot', 'temporary-native-test')) {
+        & (Join-Path $PSHOME 'pwsh.exe') -NoProfile -File (Join-Path $SsdToolsRoot 'Prepare-ExternalSsd.ps1') -Mode Apply -Profile $Profile 2>$null | Out-Null
+        Assert-SsdReview ($LASTEXITCODE -eq 4)
+    }
+    $After = if ([IO.File]::Exists($ReportPath)) { (Get-FileHash -LiteralPath $ReportPath).Hash } else { $null }
+    Assert-SsdReview ($Before -eq $After)
 }
 
 $Failed = @($SsdTestResults | Where-Object { -not $_.passed }).Count

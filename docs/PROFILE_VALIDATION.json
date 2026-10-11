@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "checked_utc": "2026-10-11T07:42:32.372680+00:00",
+  "change": "Explicit temporary native graphics test profile without firmware UEFI Secure Boot; strict profile retained",
+  "default_profile": "strict-secure-boot",
+  "explicit_temporary_profile": "temporary-native-test",
+  "python_tests": {
+    "tests_run": 145,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true,
+    "hardware_or_firmware_tests": false
+  },
+  "powershell_tests": {
+    "run": 16,
+    "failures": 0,
+    "successful": true,
+    "real_device_queries_in_boundary_tests": 0,
+    "apply_cli_guards_run_for_both_profiles": true
+  },
+  "new_regression_cases": {
+    "python": 24,
+    "powershell": 5
+  },
+  "powershell_parser": [
+    {
+      "source": "tools/Prepare-ExternalSsd.ps1",
+      "parser_errors": 0
+    },
+    {
+      "source": "tools/SsdPreparation.Core.psm1",
+      "parser_errors": 0
+    },
+    {
+      "source": "tests/Test-SsdPreparation.ps1",
+      "parser_errors": 0
+    }
+  ],
+  "original_ocvalidate_1_0_8": {
+    "official_archive_sha256": "2011e8b7216ecb2645d97ea710df965947edd406846e92050b9bc4190be6d27b",
+    "strict_sample_proposal_exit_code": 0,
+    "temporary_sample_proposal_exit_code": 0,
+    "original_sample_exit_code": 0,
+    "supported_model_schema_fixture_only_exit_code": 0,
+    "public_blank_template_exit_code": 1,
+    "native_device_boot_verified": false
+  },
+  "real_read_only_profile_checks": [
+    {
+      "profile": "strict-secure-boot",
+      "audit_exit_code": 2,
+      "ready_for_boot": false,
+      "firmware_state_verified": false,
+      "unsigned_original_efi_signature_errors": [
+        "OpenCore/Signature",
+        "Bootstrap/Signature",
+        "UEFI/Drivers/0/Signature",
+        "UEFI/Drivers/1/Signature"
+      ],
+      "vault_file_issue_present": true,
+      "ssd_preflight_exit_code": 2,
+      "exact_private_device_binding_matched": true,
+      "ssd_profile_policy": {
+        "profile": "strict-secure-boot",
+        "temporary_test_only": false,
+        "required_firmware_state": "enabled",
+        "firmware_secure_boot_required": true,
+        "observed_firmware_state_known": false,
+        "observed_firmware_state_matches_profile": false,
+        "efi_authenticode_required": true,
+        "unsigned_pinned_original_efi_allowed": false,
+        "apple_secure_boot_changed_by_firmware_profile": false,
+        "sip_amfi_gatekeeper_bypass_allowed": false,
+        "external_chain_verified": false,
+        "ready_for_boot": false,
+        "gates": [
+          {
+            "code": "FIRMWARE_SECURE_BOOT_ENABLED",
+            "required": true,
+            "satisfied": false
+          },
+          {
+            "code": "EXTERNAL_FIRMWARE_TRUST_CHAIN",
+            "required": true,
+            "satisfied": false
+          }
+        ]
+      },
+      "unmet_gates": [
+        "ADMINISTRATOR",
+        "QUALIFIED_BOOT_BUNDLE",
+        "WINDOWS_MACOS_BOOT_CHOICE_CONFIGURED",
+        "FIRMWARE_SECURE_BOOT_ENABLED",
+        "EXTERNAL_FIRMWARE_TRUST_CHAIN"
+      ],
+      "stage_files_verified": 7,
+      "stage_bytes_verified": 961265615,
+      "disk_writes_performed": 0
+    },
+    {
+      "profile": "temporary-native-test",
+      "audit_exit_code": 2,
+      "ready_for_boot": false,
+      "firmware_state_verified": false,
+      "unsigned_original_efi_signature_errors": [],
+      "vault_file_issue_present": true,
+      "ssd_preflight_exit_code": 2,
+      "exact_private_device_binding_matched": true,
+      "ssd_profile_policy": {
+        "profile": "temporary-native-test",
+        "temporary_test_only": true,
+        "required_firmware_state": "disabled-for-test",
+        "firmware_secure_boot_required": false,
+        "observed_firmware_state_known": false,
+        "observed_firmware_state_matches_profile": false,
+        "efi_authenticode_required": false,
+        "unsigned_pinned_original_efi_allowed": true,
+        "apple_secure_boot_changed_by_firmware_profile": false,
+        "sip_amfi_gatekeeper_bypass_allowed": false,
+        "external_chain_verified": false,
+        "ready_for_boot": false,
+        "gates": [
+          {
+            "code": "FIRMWARE_SECURE_BOOT_DISABLED_FOR_TEST",
+            "required": true,
+            "satisfied": false
+          },
+          {
+            "code": "EXTERNAL_FIRMWARE_TRUST_CHAIN",
+            "required": false,
+            "satisfied": null
+          }
+        ]
+      },
+      "unmet_gates": [
+        "ADMINISTRATOR",
+        "QUALIFIED_BOOT_BUNDLE",
+        "WINDOWS_MACOS_BOOT_CHOICE_CONFIGURED",
+        "FIRMWARE_SECURE_BOOT_DISABLED_FOR_TEST"
+      ],
+      "stage_files_verified": 7,
+      "stage_bytes_verified": 961265615,
+      "disk_writes_performed": 0
+    }
+  ],
+  "unchanged_existing_stage": {
+    "files": 7,
+    "bytes": 961265615,
+    "all_hashes_match_previously_confirmed_sources": true,
+    "existing_config_vault_mode": "Secure",
+    "snapshot_regenerated": false,
+    "profile_selection_does_not_rewrite_snapshot": true
+  },
+  "source_sha256": {
+    "tools/qualify_opencore.py": "08c4cef3efb98ef3c91aec93f45ce8c6a9fa12dcae554791f00571df7eb3570f",
+    "tools/prepare_offline.py": "40c66dddec3424764605863eb34dd77cfce478ae09af679b36ea25f5fcb14b40",
+    "tools/verify_reference.py": "b67a88054168f4f5041ba217cb7941dceabaa4d3bd01d2d43ac09f85c0193686",
+    "tools/Prepare-ExternalSsd.ps1": "06a6b13771fdbaba592bbf0ed8407cf2b93809dfd8bdb41ca882faff7234bcde",
+    "tools/SsdPreparation.Core.psm1": "61c234388075ab6aa77f809f5b1d167c95099ec24fb16e2a593725eb62d7613b",
+    "tests/test_profiles.py": "8122bc30474de776360c52a649a0b32595d5eafe432eb1d27f1d81925ac897a1",
+    "tests/test_assembly.py": "7e8dbeb3b21429ba0698e35c9fef3ba7f58e1d064f8fc3fdb1ecb5e084a4f88f",
+    "tests/Test-SsdPreparation.ps1": "72852dbd6e473830ea83b40031adf28cd51cf28f7646e98ba415ea33496c0317",
+    "docs/TEST_PROFILES.md": "147b3f0dd370c8ce709c687c11e2f15b6a52a7c889ffeb47419ff879a67cbdc1",
+    "examples/prerequisite-declarations.json": "8a6f6134ef6435a5320f0bef3e8cbd1cd863bacbcedc813478474a4574f72d71"
+  },
+  "apple_secure_boot_automatically_disabled": false,
+  "sip_amfi_gatekeeper_bypass_added": false,
+  "firmware_or_disk_settings_changed": false,
+  "package_regenerated": false,
+  "keys_created_or_enrolled": false,
+  "ready_for_boot": false,
+  "native_graphics_acceleration_verified": false,
+  "hosted_ci_for_this_change": "pending-publication"
+}

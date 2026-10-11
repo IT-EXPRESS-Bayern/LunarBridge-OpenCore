@@ -62,6 +62,10 @@ def check_reference(archive: Path, destination: Path) -> dict:
     source_before = Q.sha256(sample.read_bytes())
     proposed = Q.write_proposal(sample, destination / 'private-stage' / 'sample-review', destination / 'private-stage')
     proposed_result = Q.validate_upstream(destination / 'private-stage' / 'sample-review' / 'proposed.plist', executable, lock)
+    test_proposed = Q.write_proposal(sample, destination / 'private-stage' / 'native-test-review',
+                                    destination / 'private-stage', profile=Q.TEST_PROFILE)
+    test_proposed_result = Q.validate_upstream(
+        destination / 'private-stage' / 'native-test-review' / 'proposed.plist', executable, lock)
     # Exercise the genuine archive/selected-driver assembly path on every hosted
     # reference run too. The blank remains an inspection fixture, never a laptop EFI.
     assembly_spec = importlib.util.spec_from_file_location('reference_assembly', ROOT / 'tools' / 'prepare_offline.py')
@@ -83,13 +87,15 @@ def check_reference(archive: Path, destination: Path) -> dict:
              'public_blank_template': blank_result,
              'schema_fixture_supported_model_only': fixture_result,
              'unchanged_upstream_sample_proposal': proposed_result,
+             'temporary_native_test_sample_proposal': test_proposed_result,
+             'temporary_native_test_profile': test_proposed['profile_policy'],
              'proposal_changed_property_count': len(proposed['changes']),
              'source_preserved': Q.sha256(sample.read_bytes()) == source_before,
              'public_blank_is_deliberately_incomplete': not blank_result['schema_passed'],
              'original_archive_offline_assembly': assembly_summary,
              'native_boot_verified': False, 'firmware_or_efi_writes': False}
     if not (original_result['schema_passed'] and fixture_result['schema_passed'] and
-            proposed_result['schema_passed'] and proof['source_preserved'] and
+            proposed_result['schema_passed'] and test_proposed_result['schema_passed'] and proof['source_preserved'] and
             proof['public_blank_is_deliberately_incomplete']):
         raise Q.ReviewError('Original validation or the intentional missing-identity guard did not behave as required.')
     return proof

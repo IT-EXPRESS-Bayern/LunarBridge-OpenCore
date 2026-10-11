@@ -7,6 +7,8 @@ param(
     [string] $Mode = 'Preflight',
     [switch] $BackupConfirmed,
     [switch] $EntireExternalDiskAuthorized,
+    [ValidateSet('strict-secure-boot', 'temporary-native-test')]
+    [string] $Profile = 'strict-secure-boot',
     [ValidatePattern('^[a-z0-9][a-z0-9-]{0,63}$')]
     [string] $StageName = 'external-ssd-review-001'
 )
@@ -38,9 +40,10 @@ try {
     # Apply is intentionally unavailable: OpenCore currently defines no trusted
     # qualification contract. Flipping manifest booleans cannot enable erasure.
     if ($Mode -eq 'Apply') {
-        [Console]::Error.WriteLine('SSD_APPLY_BLOCKED: reviewed qualified boot bundle and secure chain required.')
+        [Console]::Error.WriteLine('SSD_APPLY_BLOCKED: native boot qualification required; no destructive execution path exists.')
         exit 4
     }
+    [void](Get-SsdFirmwareProfileReview -Profile $Profile)
     if (-not $IsWindows) { throw 'WINDOWS_REQUIRED' }
     $RepositoryRoot = Assert-SsdOrdinaryRoot ([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')))
     $SsdPrivateRoot = Initialize-SsdPrivateDirectory $RepositoryRoot
@@ -72,6 +75,7 @@ try {
             $Firmware.state = if ($Firmware.enabled) { 'enabled' } else { 'disabled' }
         } catch { $Firmware.state = 'unverified-query-unavailable' }
     }
+    $FirmwareProfile = Get-SsdFirmwareProfileReview -Profile $Profile -FirmwareEnabled $Firmware.enabled
     $AssemblyRelative = 'private/assembly/' + $StageName + '/assembly-manifest.json'
     $ManifestPath = Assert-SsdLocalRegularPath -Root $RepositoryRoot -RelativePath $AssemblyRelative
     $Manifest = Read-SsdBoundedJson -Path $ManifestPath
@@ -85,14 +89,18 @@ try {
         [ordered]@{ code = 'ADMINISTRATOR'; satisfied = $IsAdministrator }
         [ordered]@{ code = 'STAGING_INVENTORY_HASHES_AND_ESP_CAPACITY'; satisfied = $Staging.hash_integrity_verified }
         [ordered]@{ code = 'QUALIFIED_BOOT_BUNDLE'; satisfied = $false }
-        [ordered]@{ code = 'FIRMWARE_SECURE_BOOT_ENABLED'; satisfied = ($Firmware.enabled -eq $true) }
-        [ordered]@{ code = 'EXTERNAL_FIRMWARE_TRUST_CHAIN'; satisfied = $false }
         [ordered]@{ code = 'WINDOWS_MACOS_BOOT_CHOICE_CONFIGURED'; satisfied = $false }
-    )
+    ) + @($FirmwareProfile.gates)
+    foreach ($Gate in $Gates) {
+        if (-not $Gate.Contains('required')) { $Gate.required = $true }
+    }
     $Report = [ordered]@{
         schema_version = 1
         mode = $Mode.ToLowerInvariant()
-        state = 'blocked-awaiting-qualified-boot-bundle-and-secure-chain'
+        state = $(if ($FirmwareProfile.firmware_secure_boot_required) {
+            'blocked-awaiting-qualified-boot-bundle-and-secure-chain'
+        } else { 'blocked-awaiting-native-test-qualification' })
+        profile_policy = $FirmwareProfile
         execution_supported = $false
         disk_writes_performed = 0
         firmware_or_bcd_changes_performed = 0
@@ -108,7 +116,7 @@ try {
         existing_staging = $Staging
         proposed_layout = $Layout
         gates = $Gates
-        unmet_gates = @($Gates | Where-Object { -not $_.satisfied } | ForEach-Object { $_.code })
+        unmet_gates = @($Gates | Where-Object { $_.required -and -not $_.satisfied } | ForEach-Object { $_.code })
         constraints = @('NO_QUALIFICATION_SCHEMA_CAN_AUTHORIZE_ERASURE_YET',
             'RECOVERY_NEEDS_KNOWN_WORKING_NATIVE_NETWORK',
             'EXTERNAL_USB_PORT_MAPPING_AND_CPU_BOOT_CONFIG_PENDING',
@@ -118,7 +126,7 @@ try {
     }
     Write-SsdPrivateJson -Name 'preflight-report.private.json' -Value $Report
     [Console]::WriteLine('SSD plan checked: exact external device matched; no device changed.')
-    [Console]::WriteLine('Execution blocked: qualified boot bundle and external Secure Boot chain pending.')
+    [Console]::WriteLine('Execution blocked: native qualification and the selected firmware condition remain pending.')
     exit 2
 } catch {
     [Console]::Error.WriteLine('SSD_PREFLIGHT_FAILED: invalid input, unavailable read-only query or private report write failure.')

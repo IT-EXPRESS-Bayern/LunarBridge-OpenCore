@@ -10,5 +10,6 @@
   "native_platform_qualified": false,
   "usb_storage_map_qualified": false,
   "native_kext_acceptance_verified": false,
-  "windows_boot_without_external_verified": false
+  "windows_boot_without_external_verified": false,
+  "firmware_secure_boot_disabled_for_test": false
 }

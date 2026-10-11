@@ -240,7 +240,8 @@ def verify_recovery(image: Path, chunklist: Path) -> dict:
 
 
 def validated_payload(archive: Path, config_path: Path, *, source_oc: Path | None = None,
-                      inspection_only=False) -> tuple[dict, dict]:
+                      inspection_only=False, profile: str = Q.DEFAULT_PROFILE) -> tuple[dict, dict]:
+    Q.profile_policy(profile)
     ordinary_path(archive)
     ordinary_path(config_path)
     config, config_raw = Q.load_config(config_path)
@@ -248,7 +249,7 @@ def validated_payload(archive: Path, config_path: Path, *, source_oc: Path | Non
     archive_raw = Q.read_bounded(archive, 16 * 1024 * 1024)
     if len(archive_raw) != lock['release_archive_bytes'] or Q.sha256(archive_raw) != lock['release_archive_sha256']:
         raise Q.ReviewError('Assembly requires the exact pinned original OpenCore 1.0.8 archive.')
-    findings = Q.policy_findings(config)
+    findings = Q.policy_findings(config, profile)
     if any(item['severity'] == 'error' for item in findings):
         raise Q.ReviewError('The selected configuration violates the required secure offline policy.')
     if not inspection_only and any(item['id'] == 'TahoeSMBIOS' for item in findings):
@@ -322,15 +323,19 @@ def validated_payload(archive: Path, config_path: Path, *, source_oc: Path | Non
     if len(names) != len(set(names)) or len(payload) > MAX_FILES or sum(len(item['raw']) for item in payload.values()) > MAX_PAYLOAD:
         raise Q.ReviewError('Assembly payload paths collide or exceed the bounded profile.')
     return payload, {'release_version': Q.VERSION, 'release_archive_sha256': Q.sha256(archive_raw),
+                     'profile': profile,
                      'configuration_sha256': Q.sha256(config_raw), 'upstream_validator': upstream,
                      'inspection_only': inspection_only, 'enabled_separate_kext_bundles': len(bundles),
                      'platform_and_windows_acpi_verified': False}
 
 
 def assemble(archive: Path, config_path: Path, name: str, *, source_oc: Path | None = None,
-             recovery_dir: Path | None = None, inspection_only=False) -> dict:
+             recovery_dir: Path | None = None, inspection_only=False,
+             profile: str = Q.DEFAULT_PROFILE) -> dict:
+    policy = Q.profile_policy(profile)
     destination = stage_path(name)
-    payload, proof = validated_payload(archive, config_path, source_oc=source_oc, inspection_only=inspection_only)
+    payload, proof = validated_payload(archive, config_path, source_oc=source_oc,
+                                       inspection_only=inspection_only, profile=profile)
     recovery = None
     if recovery_dir is not None:
         ordinary_path(recovery_dir, directory=True)
@@ -374,6 +379,7 @@ def assemble(archive: Path, config_path: Path, name: str, *, source_oc: Path | N
         json.dump(manifest, handle, indent=2)
         handle.write('\n')
     return {'stage_created': True, 'file_count': len(records), 'payload_bytes': sum(item['bytes'] for item in records),
+            'profile_policy': policy,
             'configuration_sha256': proof['configuration_sha256'], 'upstream_validator': proof['upstream_validator'],
             'recovery': recovery, 'inspection_only': inspection_only, 'ready_for_boot': False,
             'real_efi_or_disk_modified': False, 'keys_generated_or_enrolled': False}
@@ -390,6 +396,7 @@ def load_manifest(stage: Path) -> dict:
     manifest = json.loads(Q.read_bounded(stage / MANIFEST, 2 * 1024 * 1024), object_pairs_hook=unique)
     if not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int or manifest['schema_version'] != 1:
         raise Q.ReviewError('Assembly manifest schema is invalid.')
+    Q.profile_policy(manifest.get('profile', Q.DEFAULT_PROFILE))
     lock = load_lock()
     if (manifest.get('kind') != 'private_unsigned_offline_snapshot' or manifest.get('release_version') != Q.VERSION or
             manifest.get('release_archive_sha256') != lock['release_archive_sha256'] or
@@ -454,7 +461,9 @@ def current_inventory(stage: Path) -> dict[str, tuple[str, int]]:
     return files
 
 
-def preflight(name: str, *, validator_path: Path | None = None, declaration_path: Path | None = None) -> dict:
+def preflight(name: str, *, validator_path: Path | None = None, declaration_path: Path | None = None,
+              profile: str = Q.DEFAULT_PROFILE) -> dict:
+    policy = Q.profile_policy(profile)
     stage = stage_path(name, existing=True)
     manifest = load_manifest(stage)
     expected = {item['path']: (item['sha256'], item['bytes']) for item in manifest['files']}
@@ -468,6 +477,9 @@ def preflight(name: str, *, validator_path: Path | None = None, declaration_path
     modules_stale = any(path.startswith('EFI/OC/Kexts/') for path in touched)
     recovery_stale = any(path.startswith('com.apple.recovery.boot/') for path in touched)
     report = {'schema_version': 1, 'snapshot_matches': not touched,
+              'profile_policy': policy, 'snapshot_profile': manifest.get('profile', Q.DEFAULT_PROFILE),
+              'profile_selection_matches_snapshot': profile == manifest.get('profile', Q.DEFAULT_PROFILE),
+              'profile_selection_does_not_rewrite_snapshot': True,
               'manifest_is_authenticated': False, 'changed_paths': changed, 'missing_paths': missing, 'added_paths': added,
               'signing_dependencies_invalidated': {
                   'module_approval_and_signature': modules_stale,
@@ -482,13 +494,20 @@ def preflight(name: str, *, validator_path: Path | None = None, declaration_path
               'trust_order': ['qualify_config_acpi_and_separate_modules', 'approve_and_sign_native_kexts',
                               'sign_final_efi_drivers', 'create_and_sign_final_vault',
                               'embed_vault_public_key_into_opencore', 'sign_final_opencore_and_bootstrap',
-                              'verify_firmware_db_dbx_and_preserved_windows_trust', 'prove_both_native_boots_and_windows_fallback']}
+                              'verify_firmware_db_dbx_and_preserved_windows_trust', 'prove_both_native_boots_and_windows_fallback']
+              if policy['firmware_secure_boot_required'] else [
+                  'qualify_config_acpi_usb_and_separate_modules',
+                  'verify_apple_boot_sip_and_native_kext_acceptance_separately',
+                  'honour_the_explicit_vault_mode_and_pinned_efi_provenance',
+                  'confirm_firmware_disabled_for_explicit_test_without_key_changes',
+                  'prove_both_native_boots_and_windows_fallback']}
     if touched:
         report['qualification'] = None
         report['blocker'] = 'Snapshot changed; freeze a new reviewed version before repeating dependent signing steps.'
         return report
     report['qualification'] = Q.audit(stage / 'EFI' / 'OC' / 'config.plist', oc_root=stage / 'EFI' / 'OC',
-                                       validator_path=validator_path, declaration_path=declaration_path)
+                                       validator_path=validator_path, declaration_path=declaration_path,
+                                       profile=profile)
     image = stage / 'com.apple.recovery.boot' / 'BaseSystem.dmg'
     report['recovery'] = verify_recovery(image, image.with_suffix('.chunklist')) if image.exists() else None
     return report
@@ -508,14 +527,18 @@ def main() -> int:
     inspect.add_argument('--stage-name', required=True)
     inspect.add_argument('--ocvalidate', type=Path)
     inspect.add_argument('--declarations', type=Path)
+    for command_parser in (prepare, inspect):
+        command_parser.add_argument('--profile', choices=Q.PROFILES, default=Q.DEFAULT_PROFILE,
+                                    help='Strict by default; explicitly select temporary-native-test for a firmware-disabled test.')
     arguments = parser.parse_args()
     if arguments.command == 'assemble':
         result = assemble(arguments.archive, arguments.config, arguments.stage_name,
                           source_oc=arguments.source_oc, recovery_dir=arguments.recovery_dir,
-                          inspection_only=arguments.inspection_only)
+                          inspection_only=arguments.inspection_only, profile=arguments.profile)
         status = 0  # Preparation succeeded; ready_for_boot is still false.
     else:
-        result = preflight(arguments.stage_name, validator_path=arguments.ocvalidate, declaration_path=arguments.declarations)
+        result = preflight(arguments.stage_name, validator_path=arguments.ocvalidate,
+                           declaration_path=arguments.declarations, profile=arguments.profile)
         status = 2  # This offline module cannot verify a finished native boot chain.
     print(json.dumps(result, indent=2))
     return status

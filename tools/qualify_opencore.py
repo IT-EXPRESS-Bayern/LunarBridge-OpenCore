@@ -18,6 +18,9 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = '1.0.8'
+DEFAULT_PROFILE = 'strict-secure-boot'
+TEST_PROFILE = 'temporary-native-test'
+PROFILES = (DEFAULT_PROFILE, TEST_PROFILE)
 MAX_CONFIG = 2 * 1024 * 1024
 MAX_BINARY = 64 * 1024 * 1024
 APPLE_GUID = '7C436110-AB2A-4BBB-A880-FE41995C9F82'
@@ -50,11 +53,35 @@ DECLARATIONS = (
     'vault_signature_verified', 'native_platform_qualified',
     'usb_storage_map_qualified', 'native_kext_acceptance_verified',
     'windows_boot_without_external_verified',
+    'firmware_secure_boot_disabled_for_test',
 )
 
 
 class ReviewError(ValueError):
     """Message must never contain input paths, values or private identifiers."""
+
+
+def profile_policy(profile: str) -> dict:
+    if type(profile) is not str or profile not in PROFILES:
+        raise ReviewError('Select a documented explicit review profile.')
+    strict = profile == DEFAULT_PROFILE
+    return {'profile': profile, 'temporary_test_only': not strict,
+            'required_firmware_state': 'enabled' if strict else 'disabled-for-test',
+            'firmware_state_verified': False, 'firmware_secure_boot_required': strict,
+            'efi_authenticode_required': strict,
+            'unsigned_pinned_original_efi_allowed': not strict,
+            'proposed_vault_mode': 'Secure' if strict else 'Optional',
+            'apple_secure_boot_changed_by_firmware_profile': False,
+            'sip_amfi_gatekeeper_bypass_allowed': False}
+
+
+def required_declarations(config: dict, profile: str) -> tuple[str, ...]:
+    policy = profile_policy(profile)
+    excluded = {'firmware_secure_boot_disabled_for_test'} if policy['firmware_secure_boot_required'] else {
+        'firmware_secure_boot_live', 'firmware_custom_trust_available', 'efi_authenticode_verified'}
+    if not policy['firmware_secure_boot_required'] and value_at(config, 'Misc/Security/Vault') == 'Optional':
+        excluded.add('vault_signature_verified')
+    return tuple(key for key in DECLARATIONS if key not in excluded)
 
 
 def sha256(raw: bytes) -> str:
@@ -224,7 +251,8 @@ def inspect_kext(raw: bytes) -> dict:
             'signature_trust_verified': False, 'sha256': sha256(raw)}
 
 
-def policy_findings(config: dict) -> list[dict]:
+def policy_findings(config: dict, profile: str = DEFAULT_PROFILE) -> list[dict]:
+    policy = profile_policy(profile)
     findings = []
     def require(path, expected, message):
         actual = value_at(config, path)
@@ -232,7 +260,11 @@ def policy_findings(config: dict) -> list[dict]:
             findings.append({'id': path, 'severity': 'error', 'message': message})
     require('UEFI/Quirks/DisableSecurityPolicy', False, 'Firmware security policy must remain enabled.')
     require('Booter/Quirks/ProtectSecureBoot', True, 'Protect firmware Secure Boot variables during the boot chain.')
-    require('Misc/Security/Vault', 'Secure', 'The finished trusted chain requires a signed OpenCore vault.')
+    if policy['firmware_secure_boot_required']:
+        require('Misc/Security/Vault', 'Secure', 'The strict profile requires a signed OpenCore vault.')
+    elif value_at(config, 'Misc/Security/Vault') not in ('Optional', 'Secure'):
+        findings.append({'id': 'Misc/Security/Vault', 'severity': 'error',
+                         'message': 'The temporary test profile permits Optional or Secure vault mode.'})
     require('Misc/Security/DmgLoading', 'Signed', 'The recovery profile must load only Apple-signed disk images.')
     require('Misc/Security/ExposeSensitiveData', 0, 'Public preparation must not expose sensitive boot information.')
     require('Misc/Security/AllowSetDefault', False, 'The review profile must not offer firmware default changes.')
@@ -372,7 +404,9 @@ def inspect_vault(oc_root: Path, required: set[str]) -> dict:
             'embedded_key_verified': False, 'sha256': sha256(raw)}
 
 
-def file_findings(config: dict, oc_root: Path | None, config_raw: bytes) -> tuple[list[dict], list[dict]]:
+def file_findings(config: dict, oc_root: Path | None, config_raw: bytes, *,
+                  profile: str = DEFAULT_PROFILE) -> tuple[list[dict], list[dict]]:
+    policy = profile_policy(profile)
     findings, images = [], []
     if oc_root is None:
         return [{'id': 'SelectedEFI', 'severity': 'blocker', 'message': 'No explicit offline OC directory was selected for file inspection.'}], []
@@ -436,10 +470,12 @@ def file_findings(config: dict, oc_root: Path | None, config_raw: bytes) -> tupl
                     findings.append({'id': label + '/Provenance', 'severity': 'blocker',
                                      'message': 'Binary differs from the pinned original release; signing or mixed-version provenance requires review.'})
                 if not result['certificate_table_present']:
-                    findings.append({'id': label + '/Signature', 'severity': 'error',
-                                     'message': 'EFI binary has no Authenticode certificate table; the project signed-loader profile is incomplete.'})
+                    allowed_original = policy['unsigned_pinned_original_efi_allowed'] and result['matches_original_release']
+                    findings.append({'id': label + '/Signature', 'severity': 'info' if allowed_original else 'error',
+                                     'message': 'Unsigned pinned original EFI is permitted only for the temporary native test; firmware trust remains unverified.'
+                                     if allowed_original else 'EFI binary has no accepted Authenticode table or pinned-original test provenance.'})
                 else:
-                    findings.append({'id': label + '/Trust', 'severity': 'blocker',
+                    findings.append({'id': label + '/Trust', 'severity': 'blocker' if policy['efi_authenticode_required'] else 'info',
                                      'message': 'Certificate presence does not prove signature validity, firmware trust or revocation status.'})
             elif kind == 'kext':
                 result = inspect_kext(raw)
@@ -456,6 +492,13 @@ def file_findings(config: dict, oc_root: Path | None, config_raw: bytes) -> tupl
             images.append({'entry': label, 'kind': kind, **result})
         except (ReviewError, OSError, ValueError, struct.error):
             findings.append({'id': label + '/File', 'severity': 'error', 'message': 'Selected file is missing, unsafe or malformed.'})
+    vault_optional = not policy['firmware_secure_boot_required'] and value_at(config, 'Misc/Security/Vault') == 'Optional'
+    vault_present = any((oc_root / name).exists() for name in ('vault.plist', 'vault.sig'))
+    if vault_optional and not vault_present:
+        images.append({'entry': 'Vault', 'kind': 'vault', 'configured_mode': 'Optional',
+                       'required_for_selected_profile': False, 'rsa_signature_verified': False,
+                       'embedded_key_verified': False})
+        return findings, images
     try:
         vault = inspect_vault(oc_root, required_vault)
         images.append({'entry': 'Vault', 'kind': 'vault', **vault})
@@ -468,9 +511,11 @@ def file_findings(config: dict, oc_root: Path | None, config_raw: bytes) -> tupl
 
 
 def audit(config_path: Path, *, oc_root: Path | None = None,
-          validator_path: Path | None = None, declaration_path: Path | None = None) -> dict:
+          validator_path: Path | None = None, declaration_path: Path | None = None,
+          profile: str = DEFAULT_PROFILE) -> dict:
+    policy = profile_policy(profile)
     config, raw = load_config(config_path)
-    findings = policy_findings(config)
+    findings = policy_findings(config, profile)
     reference = json.loads((ROOT / 'reference-lock.json').read_text(encoding='utf-8'))
     upstream = {'schema_passed': False, 'version': None, 'executed': False}
     if validator_path is None:
@@ -479,7 +524,7 @@ def audit(config_path: Path, *, oc_root: Path | None = None,
         upstream = {'executed': True, **validate_upstream(config_path, validator_path, reference)}
         if not upstream['schema_passed']:
             findings.append({'id': 'UpstreamSchema', 'severity': 'error', 'message': 'Original ocvalidate rejected the configuration.'})
-    file_issues, images = file_findings(config, oc_root, raw)
+    file_issues, images = file_findings(config, oc_root, raw, profile=profile)
     findings.extend(file_issues)
     declarations = {}
     if declaration_path is not None:
@@ -487,25 +532,30 @@ def audit(config_path: Path, *, oc_root: Path | None = None,
             declarations = json.loads(read_bounded(declaration_path, 64 * 1024))
         except (ValueError, TypeError):
             raise ReviewError('Prerequisite declarations are malformed.') from None
-        if not isinstance(declarations, dict) or declarations.get('schema_version') != 1:
+        if not isinstance(declarations, dict) or type(declarations.get('schema_version')) is not int or declarations['schema_version'] != 1:
             raise ReviewError('Prerequisite declarations need schema_version 1.')
         if any(key not in {'schema_version', *DECLARATIONS} for key in declarations):
             raise ReviewError('Unknown declaration fields are not accepted; keep private identifiers out of this file.')
         if any(key in declarations and type(declarations[key]) is not bool for key in DECLARATIONS):
             raise ReviewError('Prerequisite declarations must use Boolean values.')
     declared = {key: declarations.get(key) is True for key in DECLARATIONS}
-    for key, complete in declared.items():
+    required = required_declarations(config, profile)
+    for key in required:
+        complete = declared[key]
         if not complete:
             findings.append({'id': 'Prerequisite/' + key, 'severity': 'blocker',
                              'message': 'The corresponding device prerequisite is not declared complete.'})
     # Declarations are input, not evidence verified by this offline program.
     findings.append({'id': 'DeviceQualification', 'severity': 'blocker',
-                     'message': 'Actual firmware trust, vault signature, native CPU/USB/driver acceptance and both boots require device evidence.'})
+                     'message': 'The selected firmware condition, native CPU/USB/driver acceptance and both boots require actual device evidence.'})
     return {'schema_version': 1, 'target': 'Samsung Galaxy Book5 Pro16 NP960XHA-KG3DE',
             'opencore_version': VERSION, 'configuration_sha256': sha256(raw),
+            'profile_policy': policy,
             'offline_policy_passed': not any(issue['severity'] == 'error' for issue in findings),
             'ready_for_boot': False, 'device_boot_verified': False, 'firmware_state_verified': False,
             'declarations_are_verified_evidence': False, 'declared_prerequisites': declared,
+            'required_prerequisites': list(required),
+            'prerequisites_not_required_for_selected_profile': [key for key in DECLARATIONS if key not in required],
             'upstream_validator': upstream, 'images': images, 'findings': findings,
             'writes_to_efi_firmware_or_disks': False, 'private_identifiers_in_report': False}
 
@@ -538,11 +588,13 @@ POLICY_CHANGES = {
 }
 
 
-def proposal(config: dict) -> tuple[dict, list[dict]]:
+def proposal(config: dict, *, profile: str = DEFAULT_PROFILE) -> tuple[dict, list[dict]]:
+    policy = profile_policy(profile)
     proposed, changes = copy.deepcopy(config), []
     if value_at(config, 'Misc/Security/ApECID') != 0:
         raise ReviewError('A personalised Apple boot configuration requires a separate explicit review; no reset is proposed.')
-    for path, replacement in POLICY_CHANGES.items():
+    replacements = {**POLICY_CHANGES, 'Misc/Security/Vault': policy['proposed_vault_mode']}
+    for path, replacement in replacements.items():
         current = value_at(proposed, path)
         if type(current) is not type(replacement) or current != replacement:
             set_at(proposed, path, replacement)
@@ -571,9 +623,11 @@ def proposal(config: dict) -> tuple[dict, list[dict]]:
     return proposed, changes
 
 
-def write_proposal(config_path: Path, destination: Path, allowed_root: Path) -> dict:
+def write_proposal(config_path: Path, destination: Path, allowed_root: Path, *,
+                   profile: str = DEFAULT_PROFILE) -> dict:
+    policy = profile_policy(profile)
     config, original = load_config(config_path)
-    proposed, changes = proposal(config)
+    proposed, changes = proposal(config, profile=profile)
     root, selected = allowed_root.resolve(), destination.resolve()
     if not selected.is_relative_to(root) or selected == root or selected.exists():
         raise ReviewError('A new, unused directory inside the private staging root is required.')
@@ -586,8 +640,9 @@ def write_proposal(config_path: Path, destination: Path, allowed_root: Path) -> 
     report = {'schema_version': 1, 'source_sha256': sha256(original), 'proposed_sha256': sha256(output),
               'changes': changes, 'source_overwritten': False, 'deployed': False,
               'contains_private_original_copy': True,
+              'profile_policy': policy,
               'rollback': 'Discard this private stage; the selected source is unchanged.',
-              'remaining_policy_findings': policy_findings(proposed)}
+              'remaining_policy_findings': policy_findings(proposed, profile)}
     selected.mkdir(parents=True, exist_ok=False)
     # Exclusive writes prevent replacing an existing configuration or report.
     for name, raw in [('source.plist', original), ('proposed.plist', output),
@@ -644,17 +699,20 @@ def main(argv: list[str] | None = None) -> int:
     propose_parser = sub.add_parser('propose', help='Write one unchanged source and proposed copy inside private/staging only.')
     propose_parser.add_argument('--config', required=True, type=Path)
     propose_parser.add_argument('--stage-name', required=True)
+    for command_parser in (audit_parser, propose_parser):
+        command_parser.add_argument('--profile', choices=PROFILES, default=DEFAULT_PROFILE,
+                                    help='Strict secure boot by default; temporary-native-test is an explicit offline test selection.')
     arguments = parser.parse_args(argv)
     try:
         if arguments.command == 'audit':
             report = audit(arguments.config, oc_root=arguments.oc_root, validator_path=arguments.ocvalidate,
-                           declaration_path=arguments.declarations)
+                           declaration_path=arguments.declarations, profile=arguments.profile)
             print(json.dumps(report, indent=2))
             return 2 if any(issue['severity'] in {'error', 'blocker'} for issue in report['findings']) else 0
         if not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}', arguments.stage_name):
             raise ReviewError('Stage name must contain only lowercase letters, numbers and hyphens.')
         allowed_root = ROOT / 'private' / 'staging'
-        report = write_proposal(arguments.config, allowed_root / arguments.stage_name, allowed_root)
+        report = write_proposal(arguments.config, allowed_root / arguments.stage_name, allowed_root, profile=arguments.profile)
         print(json.dumps(report, indent=2))
         return 0
     except (ReviewError, OSError, ValueError, TypeError, KeyError, struct.error):

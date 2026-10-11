@@ -102,6 +102,48 @@ class OfflineAssemblyTests(unittest.TestCase):
     def assemble(self, name='review-one', **kwargs):
         return A.assemble(self.archive, self.config_path, name, **kwargs)
 
+    def test_explicit_temporary_profile_allows_optional_vault_unsigned_snapshot(self):
+        self.config['Misc']['Security']['Vault'] = 'Optional'
+        self.write_config()
+        result = self.assemble(profile=A.Q.TEST_PROFILE)
+        manifest = A.load_manifest(self.stage())
+        self.assertEqual(manifest['profile'], A.Q.TEST_PROFILE)
+        self.assertTrue(result['profile_policy']['unsigned_pinned_original_efi_allowed'])
+        self.assertFalse(result['ready_for_boot'])
+        self.assertFalse(result['keys_generated_or_enrolled'])
+
+    def test_default_profile_rejects_optional_vault_before_stage_creation(self):
+        self.config['Misc']['Security']['Vault'] = 'Optional'
+        self.write_config()
+        with self.assertRaises(A.Q.ReviewError):
+            self.assemble()
+        self.assertFalse(self.stage().exists())
+
+    def test_unknown_profile_is_refused_before_snapshot_creation(self):
+        with self.assertRaises(A.Q.ReviewError):
+            self.assemble(profile='unknown')
+        self.assertFalse(self.stage().exists())
+
+    def test_manifest_unknown_profile_does_not_fall_back_to_strict(self):
+        self.assemble()
+        path = self.stage() / A.MANIFEST
+        manifest = json.loads(path.read_text())
+        manifest['profile'] = True
+        path.write_text(json.dumps(manifest))
+        with self.assertRaises(A.Q.ReviewError):
+            A.preflight('review-one', profile=A.Q.TEST_PROFILE)
+
+    def test_explicit_test_preflight_does_not_rewrite_strict_snapshot(self):
+        self.assemble()
+        path = self.stage() / A.MANIFEST
+        before = path.read_bytes()
+        result = A.preflight('review-one', profile=A.Q.TEST_PROFILE)
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual(result['snapshot_profile'], A.Q.DEFAULT_PROFILE)
+        self.assertFalse(result['profile_selection_matches_snapshot'])
+        self.assertFalse(result['ready_for_boot'])
+        self.assertFalse(result['qualification']['firmware_state_verified'])
+
     def stage(self, name='review-one'):
         return self.root / 'private' / 'assembly' / name
 

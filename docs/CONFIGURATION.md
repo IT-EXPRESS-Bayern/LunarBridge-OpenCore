@@ -12,7 +12,7 @@ Der vorhandene Download enthält OpenCore 1.0.8 und sein originales Sample; eine
 | `UEFI/Quirks/RequestBootVarRouting` | `true`; die vorhandene Bootvariable-Routing-Funktion erfordert passend aktiviertes `OpenRuntime.efi`. |
 | `PlatformInfo/UpdateSMBIOSMode`, `Kernel/Quirks/CustomSMBIOSGuid` | `Custom` und `true`; macOS nutzt die eigenen SMBIOS-GUIDs, während Windows seine OEM-Tabellen behalten soll. |
 | `Booter/Quirks/ProtectSecureBoot` | `true`, um Firmware-Secure-Boot-Variablen während dieser Bootkette vor Schreibzugriffen zu schützen. |
-| `Misc/Security/SecureBootModel`, `Vault`, `DmgLoading` | `Default`, `Secure`, `Signed`; eine passende Apple-Richtlinie, ein echter signierter Vault und Apple-signierte Recovery müssen später qualifiziert werden. |
+| `Misc/Security/SecureBootModel`, `Vault`, `DmgLoading` | `Default`, profilabhängig `Secure` oder im ausdrücklichen temporären Test `Optional`, `Signed`. Apple-Richtlinie und Kext-Zulassung bleiben eigenständige Prüfungen. |
 | `UEFI/Quirks/DisableSecurityPolicy` | Bleibt `false`. |
 | `UEFI/APFS/MinDate`, `MinVersion` | Bleiben `0`, also die OpenCore-Mindeststände; `-1` für beliebig alte Treiber ist ausgeschlossen. |
 | `UEFI/AppleInput/AppleEvent`, `GraphicsInputMirroring` | `Builtin` und `true`, damit die Windows-BitLocker-Oberfläche Tastatureingaben erhalten kann. |
@@ -24,6 +24,6 @@ Die Sample-Maske `0x010F0103` enthält keine USB-Freigabe und keine ESP-/HFS-Fre
 
 Die öffentliche Vorlage ersetzt den im Release nicht mitgelieferten `HfsPlus.efi`-Sampleeintrag durch den vorhandenen `OpenHfsPlus.efi`. Sie aktiviert nur diesen Dateisystemtreiber und `OpenRuntime.efi`, enthält keine Hardware-Kexts und keine ACPI-Patches. SMBIOS-Identität und CPUID-Emulation bleiben bewusst leer beziehungsweise null. Ein vorgeschlagener Wert ist keine bereits in einer EFI angewendete Einstellung.
 
-Der eigene Validator setzt eine engere, dokumentierte Projekt-Richtlinie als OpenCore selbst. Beispielsweise ist `DmgLoading=Signed` hier für die geplante Recovery erforderlich; für einen später vollständig installierten Aufbau kann ein separat überprüftes Profil ohne Recovery sinnvoll sein. Das Modul behauptet nicht, dass jeder andere dokumentierte OpenCore-Wert generell defekt sei.
+Der eigene Validator setzt zwei dokumentierte Projektprofile um: `strict-secure-boot` als Standard und `temporary-native-test` als ausdrückliche Auswahl. [TEST_PROFILES.md](TEST_PROFILES.md) nennt CLI-Parameter und Grenzen. Der vorhandene Snapshot wird durch die Auswahl nicht verändert. Die Projektprofile sind enger als OpenCore selbst. Beispielsweise ist `DmgLoading=Signed` hier für die geplante Recovery erforderlich; für einen später vollständig installierten Aufbau kann ein separat überprüftes Profil ohne Recovery sinnvoll sein. Das Modul behauptet nicht, dass jeder andere dokumentierte OpenCore-Wert generell defekt sei.
 
 Beleg: [OpenCore-Konfiguration 1.0.8](https://github.com/acidanthera/OpenCorePkg/blob/6fe4d15cb66596d99d8cfedce69d8fc6dad71886/Docs/Configuration.tex), Abschnitte ScanPolicy, APFS, Windows-Unterstützung, AppleInput und UpdateSMBIOSMode.
